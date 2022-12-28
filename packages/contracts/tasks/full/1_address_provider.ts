@@ -46,6 +46,7 @@ task(
         deployRegistry: !notFalsyOrZeroAddress(providerRegistryAddress),
       });
     }
+
     // 3. Set pool admins
     await waitForTx(
       await addressesProvider.setGlobalAdmin(

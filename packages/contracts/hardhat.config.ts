@@ -94,8 +94,8 @@ const buidlerConfig: HardhatUserConfig = {
     timeout: 0,
   },
   tenderly: {
-    project: process.env.TENDERLY_PROJECT || '',
-    username: process.env.TENDERLY_USERNAME || '',
+    project: process.env.TENDERLY_PROJECT || 'project',
+    username: process.env.TENDERLY_USERNAME || 'vmexfinance',
     forkNetwork: '1', //Network id of the network we want to fork
   },
   networks: {
@@ -106,7 +106,7 @@ const buidlerConfig: HardhatUserConfig = {
     kovan: getCommonNetworkConfig(eEthereumNetwork.kovan, 42),
     ropsten: getCommonNetworkConfig(eEthereumNetwork.ropsten, 3),
     main: getCommonNetworkConfig(eEthereumNetwork.main, 1),
-    tenderly: getCommonNetworkConfig(eEthereumNetwork.tenderly, 1),
+    tenderly: getCommonNetworkConfig(eEthereumNetwork.tenderly, 31337),
     matic: getCommonNetworkConfig(ePolygonNetwork.matic, 137),
     mumbai: getCommonNetworkConfig(ePolygonNetwork.mumbai, 80001),
     xdai: getCommonNetworkConfig(eXDaiNetwork.xdai, 100),

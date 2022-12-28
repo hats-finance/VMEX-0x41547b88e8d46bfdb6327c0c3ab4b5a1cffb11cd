@@ -1,4 +1,4 @@
-import { Contract } from "ethers";
+import { Contract, ethers, Signer } from "ethers";
 import { DRE, notFalsyOrZeroAddress, waitForTx } from "./misc-utils";
 import {
   tEthereumAddress,
@@ -93,6 +93,7 @@ import { LendingPoolConfiguratorLibraryAddresses } from "../types/LendingPoolCon
 import { CurveOracleV2LibraryAddresses } from "../types/CurveOracleV2Factory";
 import { UiPoolDataProvider } from "../types";
 import { eNetwork } from "./types";
+import { NETWORKS_RPC_URL } from "../helper-hardhat-config";
 
 export const deployUiIncentiveDataProviderV2 = async (verify?: boolean) =>
   withSaveAndVerify(
