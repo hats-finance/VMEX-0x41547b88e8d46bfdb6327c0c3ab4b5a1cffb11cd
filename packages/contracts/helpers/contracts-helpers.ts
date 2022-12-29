@@ -83,9 +83,7 @@ export const rawInsertContractAddressInDb = async (
     .write();
 
 export const getEthersSigners = async (): Promise<Signer[]> => {
-  console.log("inside get ethers signers");
   const ethersSigners = await Promise.all(await DRE.ethers.getSigners());
-  console.log("got signers", ethersSigners);
   if (usingDefender()) {
     const [, ...users] = ethersSigners;
     return [await getDefenderRelaySigner(), ...users];
