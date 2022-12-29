@@ -27,10 +27,13 @@ import '@nomiclabs/hardhat-waffle';
 import 'temp-hardhat-etherscan';
 import 'hardhat-gas-reporter';
 import 'hardhat-typechain';
-import '@tenderly/hardhat-tenderly';
+// import '@tenderly/hardhat-tenderly';
 import "hardhat-deploy";
 import 'solidity-coverage';
 import { fork } from 'child_process';
+
+import * as tdly from "@tenderly/hardhat-tenderly";
+tdly.setup();
 
 const SKIP_LOAD = process.env.SKIP_LOAD === 'true';
 const DEFAULT_BLOCK_GAS_LIMIT = 80000000; //update: x10
@@ -106,7 +109,7 @@ const buidlerConfig: HardhatUserConfig = {
     kovan: getCommonNetworkConfig(eEthereumNetwork.kovan, 42),
     ropsten: getCommonNetworkConfig(eEthereumNetwork.ropsten, 3),
     main: getCommonNetworkConfig(eEthereumNetwork.main, 1),
-    tenderly: getCommonNetworkConfig(eEthereumNetwork.tenderly, 31337),
+    tenderly: getCommonNetworkConfig(eEthereumNetwork.tenderly, 1),
     matic: getCommonNetworkConfig(ePolygonNetwork.matic, 137),
     mumbai: getCommonNetworkConfig(ePolygonNetwork.mumbai, 80001),
     xdai: getCommonNetworkConfig(eXDaiNetwork.xdai, 100),

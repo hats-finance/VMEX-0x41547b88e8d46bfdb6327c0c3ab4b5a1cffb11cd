@@ -1,3 +1,5 @@
+import { ethers } from "ethers";
+import testWallets from "../test-wallets";
 import {
   AssetMappingsFactory,
   AaveProtocolDataProviderFactory,
@@ -43,6 +45,7 @@ import {
 import { IERC20DetailedFactory } from "../types/IERC20DetailedFactory";
 import { getEthersSigners, MockTokenMap } from "./contracts-helpers";
 import { DRE, getDb, notFalsyOrZeroAddress, omit } from "./misc-utils";
+import { usingTenderly } from "./tenderly-utils";
 import {
   eContractid,
   PoolConfiguration,
@@ -50,7 +53,15 @@ import {
   TokenContractId,
 } from "./types";
 
-export const getFirstSigner = async () => (await getEthersSigners())[0];
+export const getFirstSigner = async () => {
+  if (usingTenderly()) {
+    const provider = new ethers.providers.JsonRpcProvider(`https://rpc.tenderly.co/fork/${process.env.TENDERLY_FORK_ID}`, 1)
+    // const provider = (DRE as any).ethers.provider; 
+    return new ethers.Wallet(testWallets.accounts[0].secretKey, provider);
+  } else {
+    (await getEthersSigners())[0];
+  }
+};
 export const getEmergencyAdminT0 = async () => (await getEthersSigners())[0];
 export const getEmergencyAdminT1 = async () => (await getEthersSigners())[7];
 

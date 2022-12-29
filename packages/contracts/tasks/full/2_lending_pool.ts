@@ -184,7 +184,7 @@ task("full:deploy-lending-pool", "Deploy lending pool for dev enviroment")
           DRE.config.tenderly.username
         }/${DRE.config.tenderly.project}/fork/${DRE.tenderly
           .network()
-          .getFork()}/simulation/${DRE.tenderly.network().getHead()}`;
+          .getForkID()}/simulation/${DRE.tenderly.network().getHead()}`;
         console.error("Check tx error:", transactionLink);
       }
       throw error;

@@ -10,8 +10,9 @@ import {
 } from '../../helpers/contracts-getters';
 import { isAddress, parseEther } from 'ethers/lib/utils';
 import { isZeroAddress } from 'ethereumjs-util';
-import { Signer } from 'ethers';
+import { ethers, Signer } from 'ethers';
 import { exit } from 'process';
+import { usingTenderly } from '../../helpers/tenderly-utils';
 
 task('add-market-to-registry', 'Adds address provider to registry')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
@@ -73,13 +74,15 @@ task('add-market-to-registry', 'Adds address provider to registry')
       console.error('Current:', currentSignerAddress);
       exit(2);
     } else {
-      signer = DRE.ethers.provider.getSigner(providerRegistryOwner);
+      // signer = DRE.ethers.provider.getSigner(providerRegistryOwner);
+      signer = new ethers.providers.JsonRpcProvider(`https://rpc.tenderly.co/fork/${process.env.TENDERLY_FORK_ID}`).getSigner(providerRegistryOwner)
     }
-
+    
     // 1. Address Provider Registry instance
     const addressesProviderRegistry = (
       await getLendingPoolAddressesProviderRegistry(providerRegistryAddress)
     ).connect(signer);
+    
 
     const addressesProviderInstance = await getLendingPoolAddressesProvider(addressesProvider);
 

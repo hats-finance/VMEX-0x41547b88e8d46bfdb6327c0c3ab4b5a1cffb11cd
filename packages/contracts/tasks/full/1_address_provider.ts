@@ -32,6 +32,7 @@ task(
       MarketId,
       verify
     );
+    console.log("Successfully deployed addresses provider");
 
     // 2. Add to registry or setup a new one
     if (!skipRegistry) {
@@ -40,19 +41,23 @@ task(
         <eNetwork>DRE.network.name
       );
 
+      console.log("trying to add market to registry");
       await DRE.run("add-market-to-registry", {
         pool,
         addressesProvider: addressesProvider.address,
         deployRegistry: !notFalsyOrZeroAddress(providerRegistryAddress),
       });
+      console.log("Successfully add market to registry")
     }
-
+    
     // 3. Set pool admins
     await waitForTx(
       await addressesProvider.setGlobalAdmin(
         await getGenesisPoolAdmin(poolConfig)
       )
     );
+    console.log("Successfully set global admin")
+
     await waitForTx(
       await addressesProvider.addWhitelistedAddress(
         await getGenesisPoolAdmin(poolConfig),

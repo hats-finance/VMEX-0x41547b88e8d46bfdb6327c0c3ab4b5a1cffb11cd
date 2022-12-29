@@ -3,6 +3,8 @@ import { checkVerification } from "../../helpers/etherscan-verification";
 import { ConfigNames } from "../../helpers/configuration";
 import { printContracts } from "../../helpers/misc-utils";
 import { usingTenderly } from "../../helpers/tenderly-utils";
+import { ethers } from "ethers";
+import testWallets from "../../test-wallets";
 
 task("aave:mainnet", "Deploy development enviroment")
   .addFlag("verify", "Verify contracts at Etherscan")
@@ -18,6 +20,25 @@ task("aave:mainnet", "Deploy development enviroment")
     // Prevent loss of gas verifying all the needed ENVs for Etherscan verification
     if (verify) {
       checkVerification();
+    }
+
+    // Fund wallets on tenderly fork
+    if (usingTenderly()) {
+      const provider = new ethers.providers.JsonRpcProvider(`https://rpc.tenderly.co/fork/${process.env.TENDERLY_FORK_ID}`)
+      // const provider = (DRE as any).ethers.provider;
+      const WALLETS = testWallets.accounts.map((el) => new ethers.Wallet(el.secretKey).address);
+      
+      const result = await provider.send("tenderly_setBalance", [
+        WALLETS,
+        //amount in wei will be set for all wallets
+        ethers.utils.hexValue(ethers.utils.parseUnits("10", "ether").toHexString()),
+      ]);
+
+      
+      console.log('\nSuccessfully funded test wallets:', result, "\n");
+      
+      const networkId = await provider.send("eth_chainId", []);
+      console.log("NETWORK ID IS", networkId);
     }
 
     console.log("Migration started\n");
