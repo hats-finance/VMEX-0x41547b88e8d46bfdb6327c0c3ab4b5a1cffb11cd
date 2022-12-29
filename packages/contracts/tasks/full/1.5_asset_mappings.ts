@@ -25,7 +25,8 @@ import {
   getLendingPoolAddressesProvider,
   getLendingPoolConfiguratorProxy,
   getAssetMappings,
-  getWETHGateway
+  getWETHGateway,
+  getFirstSigner
 } from "../../helpers/contracts-getters";
 
 task(
@@ -59,9 +60,10 @@ task(
 
       const addressesProvider = await getLendingPoolAddressesProvider();
 
-      const admin = await DRE.ethers.getSigner(
-        await addressesProvider.getGlobalAdmin()
-      );
+      // const admin = await DRE.ethers.getSigner(
+      //   await addressesProvider.getGlobalAdmin()
+      // );
+      const admin = await getFirstSigner();
 
       // const oracle = await addressesProvider.getPriceOracle();
 
@@ -105,7 +107,7 @@ task(
     addCurveStrategyAddress(//tricrypto uses this
       "0xc4AD29ba4B3c580e6D59105FFf484999997675Ff",
       CrvLpStrategy.address
-    ) 
+    )
   ); //0 is default strategy
 
   await waitForTx(
@@ -119,7 +121,7 @@ task(
     addCurveStrategyAddress(//steth uses eth
       "0x06325440D014e39736583c165C2963BA99fAf14E",
       CrvLpEthStrategy.address
-    ) 
+    )
   ); //0 is default strategy
   await waitForTx(
     await assetMappings.
@@ -127,7 +129,7 @@ task(
     addCurveStrategyAddress(//fraxusdc uses this
       "0x3175Df0976dFA876431C2E9eE6Bc45b65d3473CC",
       CrvLpStrategy.address
-    ) 
+    )
   ); //0 is default strategy
   await waitForTx(
     await assetMappings.
@@ -135,7 +137,7 @@ task(
     addCurveStrategyAddress(//frax3crv uses this
       "0xd632f22692FaC7611d2AA1C0D552930D43CAEd3B",
       CrvLpStrategy.address
-    ) 
+    )
   ); //0 is default strategy
 
   await waitForTx(
@@ -144,6 +146,6 @@ task(
     addCurveStrategyAddress(//cvx uses this
       "0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B",
       CvxStrategy.address
-    ) 
+    )
   ); //0 is default strategy
   });

@@ -54,13 +54,13 @@ import {
 } from "./types";
 
 export const getFirstSigner = async () => {
-  if (usingTenderly()) {
-    const provider = new ethers.providers.JsonRpcProvider(`https://rpc.tenderly.co/fork/${process.env.TENDERLY_FORK_ID}`, 1)
-    // const provider = (DRE as any).ethers.provider; 
-    return new ethers.Wallet(testWallets.accounts[0].secretKey, provider);
-  } else {
-    (await getEthersSigners())[0];
-  }
+  // if (usingTenderly()) {
+  //   const provider = new ethers.providers.JsonRpcProvider(`https://rpc.tenderly.co/fork/${process.env.TENDERLY_FORK_ID}`, 1)
+  //   // const provider = (DRE as any).ethers.provider;
+  //   return new ethers.Wallet(testWallets.accounts[0].secretKey, provider);
+  // } else {
+    return (await getEthersSigners())[0];
+  // }
 };
 export const getEmergencyAdminT0 = async () => (await getEthersSigners())[0];
 export const getEmergencyAdminT1 = async () => (await getEthersSigners())[7];

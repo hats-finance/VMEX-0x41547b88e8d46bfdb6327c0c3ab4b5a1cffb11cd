@@ -7,8 +7,9 @@ import {
   getGenesisPoolAdmin,
   getEmergencyAdmin,
 } from "../../helpers/configuration";
-import { getParamPerNetwork } from "../../helpers/contracts-helpers";
+import { getEthersSigners, getParamPerNetwork } from "../../helpers/contracts-helpers";
 import { eNetwork } from "../../helpers/types";
+import { getFirstSigner } from "../../helpers/contracts-getters";
 
 task(
   "full:deploy-address-provider",
@@ -49,7 +50,7 @@ task(
       });
       console.log("Successfully add market to registry")
     }
-    
+
     // 3. Set pool admins
     await waitForTx(
       await addressesProvider.setGlobalAdmin(
@@ -79,11 +80,11 @@ task(
     );
     //await waitForTx(await addressesProvider.setEmergencyAdmin(await getEmergencyAdmin(poolConfig)));
 
-    console.log("Pool Admin", await addressesProvider.getGlobalAdmin());
+    // console.log("Pool Admin", await addressesProvider.getGlobalAdmin());
     console.log(
-      "whitelisted addresses: ",
-      await addressesProvider.getGlobalAdmin(),
-      " and ",
+      // "whitelisted addresses: ",
+      // await addressesProvider.getGlobalAdmin(),
+      // " and ",
       await getEmergencyAdmin(poolConfig)
     );
     // console.log('Emergency Admin', await addressesProvider.getEmergencyAdmin());

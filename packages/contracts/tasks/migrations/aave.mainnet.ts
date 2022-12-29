@@ -23,23 +23,20 @@ task("aave:mainnet", "Deploy development enviroment")
     }
 
     // Fund wallets on tenderly fork
-    if (usingTenderly()) {
-      const provider = new ethers.providers.JsonRpcProvider(`https://rpc.tenderly.co/fork/${process.env.TENDERLY_FORK_ID}`)
-      // const provider = (DRE as any).ethers.provider;
-      const WALLETS = testWallets.accounts.map((el) => new ethers.Wallet(el.secretKey).address);
-      
-      const result = await provider.send("tenderly_setBalance", [
-        WALLETS,
-        //amount in wei will be set for all wallets
-        ethers.utils.hexValue(ethers.utils.parseUnits("10", "ether").toHexString()),
-      ]);
+    // if (usingTenderly()) {
+    //   // const provider = new ethers.providers.JsonRpcProvider(`https://rpc.tenderly.co/fork/${process.env.TENDERLY_FORK_ID}`)
+    //   const provider = (DRE as any).ethers.provider;
+    //   const WALLETS = testWallets.accounts.map((el) => new ethers.Wallet(el.secretKey).address);
 
-      
-      console.log('\nSuccessfully funded test wallets:', result, "\n");
-      
-      const networkId = await provider.send("eth_chainId", []);
-      console.log("NETWORK ID IS", networkId);
-    }
+    //   const result = await provider.send("tenderly_setBalance", [
+    //     WALLETS,
+    //     //amount in wei will be set for all wallets
+    //     ethers.utils.hexValue(ethers.utils.parseUnits("10", "ether").toHexString()),
+    //   ]);
+
+
+    //   console.log('\nSuccessfully funded test wallets:', result, "\n");
+    // }
 
     console.log("Migration started\n");
 
