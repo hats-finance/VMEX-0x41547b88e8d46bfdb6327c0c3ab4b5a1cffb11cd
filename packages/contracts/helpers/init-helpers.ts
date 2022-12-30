@@ -202,10 +202,12 @@ interestRateStrategyAddress.push(strategyAddresses[strategy.name]);
   console.log(
     `- AssetData initialization`
   );
+  console.log("\nBEFORE MAPPING ASSETS")
+  console.log("PARAMS:", underlying, initInputParams, interestRateStrategyAddress);
   const tx3 = await waitForTx(
     await assetMappings
       .connect(admin)
-      .setAssetMapping(underlying, initInputParams, interestRateStrategyAddress )
+      .setAssetMapping(underlying, initInputParams, interestRateStrategyAddress, { gasLimit: 9000000 })
   );
 
   console.log("    * gasUsed", tx3.gasUsed.toString());
