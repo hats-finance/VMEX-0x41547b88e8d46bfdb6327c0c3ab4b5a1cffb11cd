@@ -80,11 +80,11 @@ task(
     );
     //await waitForTx(await addressesProvider.setEmergencyAdmin(await getEmergencyAdmin(poolConfig)));
 
-    // console.log("Pool Admin", await addressesProvider.getGlobalAdmin());
+    console.log("Pool Admin", await addressesProvider.getGlobalAdmin());
     console.log(
-      // "whitelisted addresses: ",
-      // await addressesProvider.getGlobalAdmin(),
-      // " and ",
+      "whitelisted addresses: ",
+      await addressesProvider.getGlobalAdmin(),
+      " and ",
       await getEmergencyAdmin(poolConfig)
     );
     // console.log('Emergency Admin', await addressesProvider.getEmergencyAdmin());

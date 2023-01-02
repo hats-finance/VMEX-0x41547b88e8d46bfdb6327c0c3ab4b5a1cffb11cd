@@ -8,28 +8,28 @@ task(`set-DRE`, `Inits the DRE, to have access to all the plugins' objects`).set
     if (DRE) {
       return;
     }
-    if (
-      (_DRE as HardhatRuntimeEnvironment).network.name.includes('tenderly') ||
-      process.env.TENDERLY === 'true'
-    ) {
-      console.log('- Setting up Tenderly provider');
-      // const net = _DRE.tenderly.network();
+    // if (
+    //   (_DRE as HardhatRuntimeEnvironment).network.name.includes('tenderly') ||
+    //   process.env.TENDERLY === 'true'
+    // ) {
+    //   console.log('- Setting up Tenderly provider');
+    //   // const net = _DRE.tenderly.network();
 
-      // if (process.env.TENDERLY_FORK_ID && process.env.TENDERLY_HEAD_ID) {
-      //   console.log('- Connecting to a Tenderly Fork');
-      //   await net.setFork(process.env.TENDERLY_FORK_ID);
-      //   await net.setHead(process.env.TENDERLY_HEAD_ID);
-      // } else {
-      //   console.log('- Creating a new Tenderly Fork');
-      //   await net.initializeFork();
-      // }
-      // // const provider = new _DRE.ethers.providers.Web3Provider(net);
-      // console.log('- Initialized Tenderly fork:');
-      // console.log('  - Fork: ', net.getForkID());
-      // console.log('  - Head: ', net.getHead());
-      const provider = new ethers.providers.JsonRpcProvider(`https://rpc.tenderly.co/fork/${process.env.TENDERLY_FORK_ID}`)
-      _DRE.ethers.provider = provider;
-    }
+    //   // if (process.env.TENDERLY_FORK_ID && process.env.TENDERLY_HEAD_ID) {
+    //   //   console.log('- Connecting to a Tenderly Fork');
+    //   //   await net.setFork(process.env.TENDERLY_FORK_ID);
+    //   //   await net.setHead(process.env.TENDERLY_HEAD_ID);
+    //   // } else {
+    //   //   console.log('- Creating a new Tenderly Fork');
+    //   //   await net.initializeFork();
+    //   // }
+    //   // // const provider = new _DRE.ethers.providers.Web3Provider(net);
+    //   // console.log('- Initialized Tenderly fork:');
+    //   // console.log('  - Fork: ', net.getForkID());
+    //   // console.log('  - Head: ', net.getHead());
+    //   const provider = new ethers.providers.JsonRpcProvider(`https://rpc.tenderly.co/fork/${process.env.TENDERLY_FORK_ID}`)
+    //   _DRE.ethers.provider = provider;
+    // }
 
     console.log('- Enviroment');
     if (process.env.FORK) {

@@ -22,7 +22,7 @@ task("aave:mainnet", "Deploy development enviroment")
       checkVerification();
     }
 
-    // Fund wallets on tenderly fork
+    // // Fund wallets on tenderly fork
     // if (usingTenderly()) {
     //   // const provider = new ethers.providers.JsonRpcProvider(`https://rpc.tenderly.co/fork/${process.env.TENDERLY_FORK_ID}`)
     //   const provider = (DRE as any).ethers.provider;

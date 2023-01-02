@@ -60,10 +60,9 @@ task(
 
       const addressesProvider = await getLendingPoolAddressesProvider();
 
-      // const admin = await DRE.ethers.getSigner(
-      //   await addressesProvider.getGlobalAdmin()
-      // );
-      const admin = await getFirstSigner();
+      const admin = await DRE.ethers.getSigner(
+        await addressesProvider.getGlobalAdmin()
+      );
 
       // const oracle = await addressesProvider.getPriceOracle();
 
@@ -78,7 +77,8 @@ task(
 
   await waitForTx(
     await addressesProvider.setAssetMappings(AssetMapping.address)
-  );
+    );
+    console.log("successfully deployed asset mappings")
 
   const assetMappings = await getAssetMappings();
 

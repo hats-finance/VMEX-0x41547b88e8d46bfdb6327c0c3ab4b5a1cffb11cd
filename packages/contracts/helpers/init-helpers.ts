@@ -207,11 +207,11 @@ interestRateStrategyAddress.push(strategyAddresses[strategy.name]);
   const tx3 = await waitForTx(
     await assetMappings
       .connect(admin)
-      .setAssetMapping(underlying, initInputParams, interestRateStrategyAddress, { gasLimit: 9000000 })
+      .setAssetMapping(underlying, initInputParams, interestRateStrategyAddress)
   );
 
   console.log("    * gasUsed", tx3.gasUsed.toString());
-  
+
 };
 
 //create another initReserves that initializes the curve v2, or just use this.

@@ -309,6 +309,7 @@ export const getPairsTokenAggregator = (
     getQuoteCurrencies(oracleQuoteCurrency)
   );
 
+
   const pairs = Object.entries(assetsWithoutQuoteCurrency).map(
     ([tokenSymbol, tokenAddress]) => {
       //if (true/*tokenSymbol !== 'WETH' && tokenSymbol !== 'ETH' && tokenSymbol !== 'LpWETH'*/) {

@@ -67,12 +67,12 @@ const getCommonNetworkConfig = (networkName: eNetwork, networkId: number) => ({
   gasMultiplier: DEFAULT_GAS_MUL,
   gasPrice: NETWORKS_DEFAULT_GAS[networkName],
   chainId: networkId,
-  accounts: {
-    mnemonic: MNEMONIC,
-    path: MNEMONIC_PATH,
-    initialIndex: 0,
-    count: 20,
-  },
+  // accounts: {
+  //   mnemonic: MNEMONIC,
+  //   path: MNEMONIC_PATH,
+  //   initialIndex: 0,
+  //   count: 20,
+  // },
 });
 
 let forkMode;
@@ -97,7 +97,7 @@ const buidlerConfig: HardhatUserConfig = {
     timeout: 0,
   },
   tenderly: {
-    project: process.env.TENDERLY_PROJECT || 'project',
+    project: process.env.TENDERLY_PROJECT || 'vmex-test-env',
     username: process.env.TENDERLY_USERNAME || 'vmexfinance',
     forkNetwork: '1', //Network id of the network we want to fork
   },
