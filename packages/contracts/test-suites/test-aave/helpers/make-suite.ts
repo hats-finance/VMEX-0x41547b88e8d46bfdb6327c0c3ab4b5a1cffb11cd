@@ -122,7 +122,7 @@ export async function initializeMakeSuite() {
     address: await _deployer.getAddress(),
     signer: _deployer,
   };
-
+  console.log("Begin initializeMakeSuite");
   for (const signer of restSigners) {
     testEnv.users.push({
       signer,
@@ -189,20 +189,20 @@ export async function initializeMakeSuite() {
     process.exit(1);
   }
 
-  const reservesTokensT1 = await testEnv.helpersContract.getAllReservesTokens(
-    "1"
-  );
+  // const reservesTokensT1 = await testEnv.helpersContract.getAllReservesTokens(
+  //   "1"
+  // );
 
-  const tricrypto2Address = reservesTokensT1.find(
-    (token) => token.symbol === "Tricrypto2"
-  )?.tokenAddress;
+  // const tricrypto2Address = reservesTokensT1.find(
+  //   (token) => token.symbol === "Tricrypto2"
+  // )?.tokenAddress;
 
-  if (!tricrypto2Address) {
-    process.exit(1);
-  }
+  // if (!tricrypto2Address) {
+  //   process.exit(1);
+  // }
 
-  if (isHardhatTestingStrategies)
-    testEnv.tricrypto2Strategy = await getTricrypto2Strategy();
+  // if (isHardhatTestingStrategies)
+  //   testEnv.tricrypto2Strategy = await getTricrypto2Strategy();
 
   testEnv.aDai = await getAToken(aDaiAddress);
   testEnv.aWETH = await getAToken(aWEthAddress);
@@ -214,7 +214,7 @@ export async function initializeMakeSuite() {
   testEnv.weth = await getWETHMocked(wethAddress);
   testEnv.wethGateway = await getWETHGateway();
 
-  testEnv.tricrypto2 = await getMintableERC20(tricrypto2Address);
+  // testEnv.tricrypto2 = await getMintableERC20(tricrypto2Address);
 
   //CURVE TODO: these are not deployed when running mainnet fork in localhost
   // testEnv.uniswapLiquiditySwapAdapter = await getUniswapLiquiditySwapAdapter();

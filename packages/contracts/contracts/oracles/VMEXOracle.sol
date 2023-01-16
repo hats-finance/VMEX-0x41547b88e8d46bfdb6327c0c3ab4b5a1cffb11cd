@@ -12,6 +12,7 @@ import {Initializable} from "../dependencies/openzeppelin/upgradeability/Initial
 import {AssetMappings} from "../protocol/lendingpool/AssetMappings.sol";
 import {DataTypes} from "../protocol/libraries/types/DataTypes.sol";
 import {CurveOracle} from "./CurveOracle.sol";
+import {IYearnToken} from "./interfaces/IYearnToken.sol";
 /// @title VMEXOracle
 /// @author VMEX, with inspiration from Aave
 /// @notice Proxy smart contract to get the price of an asset from a price source, with Chainlink Aggregator
@@ -127,6 +128,9 @@ contract VMEXOracle is Initializable, IPriceOracleGetter, Ownable {
         else if(tmp==DataTypes.ReserveAssetType.CURVE || tmp==DataTypes.ReserveAssetType.CURVEV2){
             return getCurveAssetPrice(asset, tmp);
         }
+        else if(tmp==DataTypes.ReserveAssetType.YEARN){
+            return getYearnPrice(asset);
+        }
         require(false, "error determining oracle address");
         return 0;
     }
@@ -181,6 +185,12 @@ contract VMEXOracle is Initializable, IPriceOracleGetter, Ownable {
         //TODO: incorporate backup oracles here?
         require(price > 0, "Curve oracle encountered an error");
         return price;
+    }
+
+    function getYearnPrice(address asset) internal view returns (uint256){
+        IYearnToken yearnVault = IYearnToken(asset);
+        uint256 underlyingPrice = getAssetPrice(yearnVault.token());
+        return yearnVault.pricePerShare()*underlyingPrice / 10**yearnVault.decimals();
     }
 
     //updateTWAP (average O(1))

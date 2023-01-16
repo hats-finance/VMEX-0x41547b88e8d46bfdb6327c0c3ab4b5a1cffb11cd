@@ -327,6 +327,11 @@ const buildTestEnv = async (deployer: Signer) => {
       LDO: mockTokens.Frax3Crv.address,
       ALCX: mockTokens.Frax3Crv.address,
       Oneinch: mockTokens.Frax3Crv.address,
+      yvTricrypto2: mockTokens.Tricrypto2.address,
+      yvThreePool: mockTokens.ThreePool.address,
+      yvStethEth: mockTokens.StethEth.address,
+      yvFraxUSDC: mockTokens.FraxUSDC.address,
+      yvFrax3Crv: mockTokens.Frax3Crv.address,
     },
     fallbackOracle
   );

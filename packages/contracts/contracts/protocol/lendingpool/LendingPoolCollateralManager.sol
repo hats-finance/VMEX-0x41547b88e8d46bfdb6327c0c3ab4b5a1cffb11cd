@@ -116,7 +116,7 @@ contract LendingPoolCollateralManager is
     ) external override returns (uint256, string memory) {
         DataTypes.UserConfigurationMap storage userConfig = _usersConfig[user][
             trancheId
-        ];
+        ].configuration;
 
         LiquidationCallLocalVars memory vars;
         {
@@ -274,7 +274,7 @@ contract LendingPoolCollateralManager is
                 DataTypes.UserConfigurationMap
                     storage liquidatorConfig = _usersConfig[msg.sender][
                         trancheId
-                    ];
+                    ].configuration;
                 liquidatorConfig.setUsingAsCollateral(
                     collateralReserve.id,
                     true
