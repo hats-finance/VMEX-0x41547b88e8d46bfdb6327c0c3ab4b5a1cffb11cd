@@ -12,7 +12,10 @@ import {IncentivizedERC20} from "./IncentivizedERC20.sol";
 import {IAaveIncentivesController} from "../../interfaces/IAaveIncentivesController.sol";
 import {IBaseStrategy} from "../../interfaces/IBaseStrategy.sol";
 import {SafeMath} from "../../dependencies/openzeppelin/contracts/SafeMath.sol";
-
+import {IYearnToken} from "../../oracles/interfaces/IYearnToken.sol";
+import {ReserveConfiguration} from "../libraries/configuration/ReserveConfiguration.sol";
+import {PercentageMath} from "../libraries/math/PercentageMath.sol";
+import {DataTypes} from "../libraries/types/DataTypes.sol";
 // import "hardhat/console.sol";
 
 /**
@@ -28,6 +31,8 @@ contract AToken is
     using WadRayMath for uint256;
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
+    using ReserveConfiguration for *;
+    using PercentageMath for uint256;
 
     bytes public constant EIP712_REVISION = bytes("1");
     bytes32 internal constant EIP712_DOMAIN =
@@ -48,6 +53,7 @@ contract AToken is
 
     /// @dev owner => next valid nonce to submit with permit()
     mapping(address => uint256) public _nonces;
+    mapping(address => uint256) public cumulativeEntryPrice; //stores price of entry * amount deposited
 
     bytes32 public DOMAIN_SEPARATOR;
 
@@ -55,7 +61,8 @@ contract AToken is
     address internal _lendingPoolConfigurator;
     address internal _treasury;
     address internal _VMEXTreasury;
-    address internal _underlyingAsset;
+    address internal _underlyingAsset; //yearn address
+    uint256 _VMEXReserveFactor;
     uint64 internal _tranche;
     address internal _strategy;
     IAaveIncentivesController internal _incentivesController;
@@ -133,6 +140,7 @@ contract AToken is
         _underlyingAsset = vars.underlyingAsset;
         _incentivesController = incentivesController;
         _tranche = vars.trancheId;
+        _VMEXReserveFactor = vars.VMEXReserveFactor;
 
         emit Initialized(
             vars.underlyingAsset,
@@ -164,6 +172,10 @@ contract AToken is
         emit VMEXTreasuryChanged(newTreasury);
     }
 
+    function getAverageEntryPrice(address user) internal view returns(uint256){
+        return cumulativeEntryPrice[user] / balanceOf(user);
+    }
+
     /**
      * @dev Burns aTokens from `user` and sends the equivalent amount of underlying to `receiverOfUnderlying`
      * - Only callable by the LendingPool, as extra state updates there need to be managed
@@ -176,64 +188,62 @@ contract AToken is
         address user,
         address receiverOfUnderlying,
         uint256 amount,
-        uint256 index
+        uint256 index,
+        DataTypes.ReserveAssetType assetType
     ) external override onlyLendingPool {
         uint256 amountScaled = amount.rayDiv(index);
         require(amountScaled != 0, Errors.CT_INVALID_BURN_AMOUNT);
-        _burn(user, amountScaled);
+        _burn(user, amountScaled); // Burn the entire amount of atokens that the user has, not just the amount they receive
 
-        if (_strategy != address(0x0)) {
+        
+        uint256 userAmount = amount;
+        if(assetType==DataTypes.ReserveAssetType.YEARN){ 
+            uint256 averageEntryPrice = getAverageEntryPrice(user);
+            //only collect interest if the yv earned interest
+            if(IYearnToken(_underlyingAsset).pricePerShare() > averageEntryPrice){
+                uint256 interestEarned = amount * (IYearnToken(_underlyingAsset).pricePerShare() - averageEntryPrice);
+                uint256 reserveFactor = _pool.getReserveData(_underlyingAsset, _tranche).configuration.getReserveFactor();
+                uint256 amountToTrancheAdmin = interestEarned.percentMul(reserveFactor);
+                uint256 amountToVMEXAdmin = (interestEarned-amountToTrancheAdmin).percentMul(_VMEXReserveFactor);
+                userAmount = amount -  amountToTrancheAdmin - amountToVMEXAdmin;
+                mintToTreasury(amountToTrancheAdmin, index);
+                mintToVMEXTreasury(amountToVMEXAdmin, index);
+            }
+            //we want to delete the entire amount being withdrawn (amount to user + amount to admins) from the entry price
+            cumulativeEntryPrice[user] -= amount * averageEntryPrice;
+        }
+        else if (_strategy != address(0x0)) { //if it's yearn, it can't have a strategy
             // withdraw from strategy
             IBaseStrategy(_strategy).withdraw(amount);
-
-            // NOTE: the strategist should adjust the supply to stay above 5%, however in the case where the strategist
-            // is not able to adjust, the first user who wants to withdraw past 5% will pay the gas to fix the rate
-
-            // if underlyingBalance - amount < minSupply, then withdraw from strategy to have totalSupply = targetSupply + amount
-            // uint256 underlyingBalance = IERC20(_underlyingAsset).balanceOf(
-            //     address(this)
-            // );
-
-            // (bool didOverflow, uint256 remaining) = underlyingBalance.trySub(
-            //     amount
-            // );
-            // uint256 totalSupply = totalSupply();
-            // uint256 minSupply = totalSupply.div(minSupplyQuotient);
-
-            // if (didOverflow || remaining < minSupply) {
-            //     uint256 targetSupplyBeforeWithdraw = totalSupply.div(
-            //         targetSupplyQuotient
-            //     ) +
-            //         amount -
-            //         underlyingBalance;
-
-            //     // withdraw from strategy
-            //     IBaseStrategy(_strategy).withdraw(targetSupplyBeforeWithdraw);
-            // }
         }
+        
+        //but only give user their amount
+        IERC20(_underlyingAsset).safeTransfer(receiverOfUnderlying, userAmount);
 
-        IERC20(_underlyingAsset).safeTransfer(receiverOfUnderlying, amount);
-
-        emit Transfer(user, address(0), amount);
-        emit Burn(user, receiverOfUnderlying, amount, index);
+        emit Transfer(user, address(0), userAmount); // note: this is amount user receives, not amount user requests
+        emit Burn(user, receiverOfUnderlying, amount, index); 
     }
 
     /**
      * @dev Mints `amount` aTokens to `user`
      * - Only callable by the LendingPool, as extra state updates there need to be managed
      * @param user The address receiving the minted tokens
-     * @param amount The amount of tokens getting minted
+     * @param amount The amount of tokens being deposited
      * @param index The new liquidity index of the reserve
      * @return `true` if the the previous balance of the user was 0
      */
     function mint(
         address user,
         uint256 amount,
-        uint256 index
+        uint256 index,
+        DataTypes.ReserveAssetType assetType
     ) external override onlyLendingPool returns (bool) {
         uint256 previousBalance = super.balanceOf(user);
+        if(assetType==DataTypes.ReserveAssetType.YEARN){
+            cumulativeEntryPrice[user] += IYearnToken(_underlyingAsset).pricePerShare() * amount;
+        }
 
-        uint256 amountScaled = amount.rayDiv(index);
+        uint256 amountScaled = amount.rayDiv(index); 
         require(amountScaled != 0, Errors.CT_INVALID_MINT_AMOUNT);
         _mint(user, amountScaled);
 
@@ -250,7 +260,7 @@ contract AToken is
      * @param index The new liquidity index of the reserve
      */
     function mintToTreasury(uint256 amount, uint256 index)
-        external
+        public
         override
         onlyLendingPool
     {
@@ -277,7 +287,7 @@ contract AToken is
      * @param index The new liquidity index of the reserve
      */
     function mintToVMEXTreasury(uint256 amount, uint256 index)
-        external
+        public
         override
         onlyLendingPoolOrStrategy
     {

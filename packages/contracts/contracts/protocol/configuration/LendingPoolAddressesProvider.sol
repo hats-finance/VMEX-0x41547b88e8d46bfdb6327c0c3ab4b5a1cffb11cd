@@ -30,6 +30,7 @@ contract LendingPoolAddressesProvider is
     bytes32 private constant GLOBAL_ADMIN = "GLOBAL_ADMIN";
     bytes32 private constant LENDING_POOL = "LENDING_POOL";
     bytes32 private constant ATOKEN = "ATOKEN";
+    bytes32 private constant YEARN_VTOKEN = "YEARN_VTOKEN";
     bytes32 private constant STABLE_DEBT = "STABLE_DEBT";
     bytes32 private constant VARIABLE_DEBT = "VARIABLE_DEBT";
     bytes32 private constant LENDING_POOL_CONFIGURATOR =
@@ -179,7 +180,7 @@ contract LendingPoolAddressesProvider is
      * @param aToken The new aToken implementation
      **/
     function setATokenImpl(address aToken) external override onlyOwner {
-        _addresses[ATOKEN] = aToken; //don't use _updateImpl since this just stores the address, the upgrade is done in LendingPoolConfigurator
+        _addresses[ATOKEN] = aToken; 
         emit ATokenUpdated(aToken);
     }
 

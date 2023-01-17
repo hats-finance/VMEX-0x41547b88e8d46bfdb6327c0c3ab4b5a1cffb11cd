@@ -755,61 +755,61 @@ export const deployGenericATokenImpl = async (verify: boolean) =>
     verify
   );
 
-export const deployDelegationAwareAToken = async (
-  [
-    pool,
-    configurator,
-    underlyingAssetAddress,
-    treasuryAddress,
-    VMEXTreasuryAddress,
-    incentivesController,
-    name,
-    symbol,
-  ]: [
-    tEthereumAddress,
-    tEthereumAddress,
-    tEthereumAddress,
-    tEthereumAddress,
-    tEthereumAddress,
-    tEthereumAddress,
-    string,
-    string
-  ],
-  verify: boolean
-) => {
-  const instance = await withSaveAndVerify(
-    await new DelegationAwareATokenFactory(await getFirstSigner()).deploy(),
-    eContractid.DelegationAwareAToken,
-    [],
-    verify
-  );
+// export const deployDelegationAwareAToken = async (
+//   [
+//     pool,
+//     configurator,
+//     underlyingAssetAddress,
+//     treasuryAddress,
+//     VMEXTreasuryAddress,
+//     incentivesController,
+//     name,
+//     symbol,
+//   ]: [
+//     tEthereumAddress,
+//     tEthereumAddress,
+//     tEthereumAddress,
+//     tEthereumAddress,
+//     tEthereumAddress,
+//     tEthereumAddress,
+//     string,
+//     string
+//   ],
+//   verify: boolean
+// ) => {
+//   const instance = await withSaveAndVerify(
+//     await new DelegationAwareATokenFactory(await getFirstSigner()).deploy(),
+//     eContractid.DelegationAwareAToken,
+//     [],
+//     verify
+//   );
 
-  await instance.initialize(
-    pool,
-    {
-      lendingPoolConfigurator: configurator,
-      treasury: treasuryAddress,
-      VMEXTreasury: VMEXTreasuryAddress,
-      underlyingAsset: underlyingAssetAddress,
-      trancheId: 0,
-    }, //set tranche to zero for now
-    incentivesController,
-    "18",
-    name,
-    symbol,
-    "0x10"
-  );
+//   await instance.initialize(
+//     pool,
+//     {
+//       lendingPoolConfigurator: configurator,
+//       treasury: treasuryAddress,
+//       VMEXTreasury: VMEXTreasuryAddress,
+//       underlyingAsset: underlyingAssetAddress,
+//       trancheId: 0,
+//     }, //set tranche to zero for now
+//     incentivesController,
+//     "18",
+//     name,
+//     symbol,
+//     "0x10"
+//   );
 
-  return instance;
-};
+//   return instance;
+// };
 
-export const deployDelegationAwareATokenImpl = async (verify: boolean) =>
-  withSaveAndVerify(
-    await new DelegationAwareATokenFactory(await getFirstSigner()).deploy(),
-    eContractid.DelegationAwareAToken,
-    [],
-    verify
-  );
+// export const deployDelegationAwareATokenImpl = async (verify: boolean) =>
+//   withSaveAndVerify(
+//     await new DelegationAwareATokenFactory(await getFirstSigner()).deploy(),
+//     eContractid.DelegationAwareAToken,
+//     [],
+//     verify
+//   );
 
 export const deployAllMockTokens = async (verify?: boolean) => {
   const tokens: { [symbol: string]: MockContract | MintableERC20 } = {};
@@ -985,6 +985,7 @@ export const deployMockAToken = async (
     tranche,
     treasuryAddress,
     VMEXTreasuryAddress,
+    VMEXReserveFactor,
     incentivesController,
     name,
     symbol
@@ -995,6 +996,7 @@ export const deployMockAToken = async (
     string,
     tEthereumAddress,
     tEthereumAddress,
+    string,
     tEthereumAddress,
     string,
     string
@@ -1015,7 +1017,8 @@ export const deployMockAToken = async (
       underlyingAsset: underlyingAssetAddress,
       trancheId: tranche,
       lendingPoolConfigurator: configurator,
-      VMEXTreasury: VMEXTreasuryAddress
+      VMEXTreasury: VMEXTreasuryAddress,
+      VMEXReserveFactor: VMEXReserveFactor,
     },
     incentivesController,
     "18",
@@ -1114,8 +1117,8 @@ export const chooseATokenDeployment = (id: eContractid) => {
   switch (id) {
     case eContractid.AToken:
       return deployGenericATokenImpl;
-    case eContractid.DelegationAwareAToken:
-      return deployDelegationAwareATokenImpl;
+    // case eContractid.DelegationAwareAToken:
+    //   return deployDelegationAwareATokenImpl;
     default:
       throw Error(`Missing aToken implementation deployment script for: ${id}`);
   }

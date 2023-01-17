@@ -77,7 +77,8 @@ library DepositWithdrawLogic {
         bool isFirstDeposit = IAToken(aToken).mint(
             vars.onBehalfOf,
             vars.amount,
-            self.liquidityIndex
+            self.liquidityIndex,
+            vars._assetMappings.getAssetType(vars.asset)
         ); //this also considers if it is a first deposit into a trancheId, not just a specific asset
 
         if (isFirstDeposit) {
@@ -153,7 +154,8 @@ library DepositWithdrawLogic {
             msg.sender,
             vars.to,
             vars.amount,
-            reserve.liquidityIndex
+            reserve.liquidityIndex,
+            _assetMappings.getAssetType(vars.asset)
         );
 
         return vars.amount;

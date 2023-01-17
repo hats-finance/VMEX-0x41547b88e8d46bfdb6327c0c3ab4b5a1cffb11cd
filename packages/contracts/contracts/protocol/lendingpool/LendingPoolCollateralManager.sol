@@ -299,7 +299,8 @@ contract LendingPoolCollateralManager is
                 user,
                 msg.sender,
                 vars.maxCollateralToLiquidate,
-                collateralReserve.liquidityIndex
+                collateralReserve.liquidityIndex,
+                vars._assetMappings.getAssetType(vars.collateralAsset)
             );
         }
 

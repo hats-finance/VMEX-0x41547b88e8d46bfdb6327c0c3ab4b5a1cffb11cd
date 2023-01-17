@@ -5,6 +5,7 @@ import {IERC20} from "../dependencies/openzeppelin/contracts/IERC20.sol";
 import {IScaledBalanceToken} from "./IScaledBalanceToken.sol";
 import {IInitializableAToken} from "./IInitializableAToken.sol";
 import {IAaveIncentivesController} from "./IAaveIncentivesController.sol";
+import {DataTypes} from "../protocol/libraries/types/DataTypes.sol";
 
 interface IAToken is IERC20, IScaledBalanceToken, IInitializableAToken {
     /**
@@ -25,7 +26,8 @@ interface IAToken is IERC20, IScaledBalanceToken, IInitializableAToken {
     function mint(
         address user,
         uint256 amount,
-        uint256 index
+        uint256 index,
+        DataTypes.ReserveAssetType assetType
     ) external returns (bool);
 
     function setTreasury(address newTreasury) external;
@@ -75,7 +77,8 @@ interface IAToken is IERC20, IScaledBalanceToken, IInitializableAToken {
         address user,
         address receiverOfUnderlying,
         uint256 amount,
-        uint256 index
+        uint256 index,
+        DataTypes.ReserveAssetType assetType
     ) external;
 
     /**
