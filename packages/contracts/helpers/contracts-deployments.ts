@@ -803,13 +803,13 @@ export const deployGenericATokenImpl = async (verify: boolean) =>
 //   return instance;
 // };
 
-// export const deployDelegationAwareATokenImpl = async (verify: boolean) =>
-//   withSaveAndVerify(
-//     await new DelegationAwareATokenFactory(await getFirstSigner()).deploy(),
-//     eContractid.DelegationAwareAToken,
-//     [],
-//     verify
-//   );
+export const deployDelegationAwareATokenImpl = async (verify: boolean) =>
+  withSaveAndVerify(
+    await new DelegationAwareATokenFactory(await getFirstSigner()).deploy(),
+    eContractid.DelegationAwareAToken,
+    [],
+    verify
+  );
 
 export const deployAllMockTokens = async (verify?: boolean) => {
   const tokens: { [symbol: string]: MockContract | MintableERC20 } = {};
@@ -1117,8 +1117,8 @@ export const chooseATokenDeployment = (id: eContractid) => {
   switch (id) {
     case eContractid.AToken:
       return deployGenericATokenImpl;
-    // case eContractid.DelegationAwareAToken:
-    //   return deployDelegationAwareATokenImpl;
+    case eContractid.DelegationAwareAToken:
+      return deployDelegationAwareATokenImpl;
     default:
       throw Error(`Missing aToken implementation deployment script for: ${id}`);
   }
