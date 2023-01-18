@@ -385,6 +385,13 @@ export const getTranche1MockedData = (
     allReservesAddresses["UNI"],
     allReservesAddresses["REN"],
     allReservesAddresses["ENJ"],
+    //delete in production, will not accept these
+    // allReservesAddresses["Tricrypto2"],
+    // allReservesAddresses["ThreePool"],
+    // allReservesAddresses["StethEth"],
+    // allReservesAddresses["FraxUSDC"],
+    // allReservesAddresses["Frax3Crv"],
+
     allReservesAddresses["yvTricrypto2"],
     allReservesAddresses["yvThreePool"],
     allReservesAddresses["yvStethEth"],

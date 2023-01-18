@@ -36,6 +36,7 @@ import {
   deployVMEXOracle,
   deployConvexBaseRewardPool,
   deployConvexBooster,
+  deployYearnTokenMocked,
 } from "../../helpers/contracts-deployments";
 import { Signer } from "ethers";
 import {
@@ -105,13 +106,27 @@ const deployAllMockTokens = async (deployer: Signer) => {
         tokens[tokenSymbol]
       );
       continue;
-    }
+    } 
     let decimals = 18;
 
     let configData = (<any>protoConfigData)[tokenSymbol];
 
     if (!configData) {
       decimals = 18;
+    }
+
+    if (tokenSymbol === "yvTricrypto2" || tokenSymbol === "yvThreePool" || tokenSymbol === "yvStethEth"|| tokenSymbol === "yvFraxUSDC"|| tokenSymbol === "yvFrax3Crv") {
+      tokens[tokenSymbol] = await deployYearnTokenMocked([
+        tokenSymbol,
+        tokenSymbol,
+        configData ? configData.reserveDecimals : 18,
+        tokens[tokenSymbol.substring(2)].address
+      ]);
+      await registerContractInJsonDb(
+        tokenSymbol.toUpperCase(),
+        tokens[tokenSymbol]
+      );
+      continue;
     }
 
     tokens[tokenSymbol] = await deployMintableERC20([

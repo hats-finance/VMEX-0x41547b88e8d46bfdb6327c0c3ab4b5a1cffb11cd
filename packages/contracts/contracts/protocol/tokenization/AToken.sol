@@ -16,7 +16,7 @@ import {IYearnToken} from "../../oracles/interfaces/IYearnToken.sol";
 import {ReserveConfiguration} from "../libraries/configuration/ReserveConfiguration.sol";
 import {PercentageMath} from "../libraries/math/PercentageMath.sol";
 import {DataTypes} from "../libraries/types/DataTypes.sol";
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 /**
  * @title Aave ERC20 AToken
@@ -172,7 +172,8 @@ contract AToken is
         emit VMEXTreasuryChanged(newTreasury);
     }
 
-    function getAverageEntryPrice(address user) internal view returns(uint256){
+    function getAverageEntryPrice(address user) public view returns(uint256){
+        console.log("balanceOf(user): ",balanceOf(user));
         return cumulativeEntryPrice[user] / balanceOf(user);
     }
 
@@ -193,19 +194,27 @@ contract AToken is
     ) external override onlyLendingPool {
         uint256 amountScaled = amount.rayDiv(index);
         require(amountScaled != 0, Errors.CT_INVALID_BURN_AMOUNT);
-        _burn(user, amountScaled); // Burn the entire amount of atokens that the user has, not just the amount they receive
 
-        
         uint256 userAmount = amount;
         if(assetType==DataTypes.ReserveAssetType.YEARN){ 
             uint256 averageEntryPrice = getAverageEntryPrice(user);
+            console.log("averageEntryPrice: ",averageEntryPrice);
+            uint256 currentPricePerShare = IYearnToken(_underlyingAsset).pricePerShare();
+            uint256 decimals = 10**IYearnToken(_underlyingAsset).decimals();
             //only collect interest if the yv earned interest
-            if(IYearnToken(_underlyingAsset).pricePerShare() > averageEntryPrice){
-                uint256 interestEarned = amount * (IYearnToken(_underlyingAsset).pricePerShare() - averageEntryPrice);
+            if(currentPricePerShare > averageEntryPrice){
+                uint256 interestEarned = amount * (currentPricePerShare - averageEntryPrice) / currentPricePerShare; //interest earned in terms of underlying curve tokens, converted to yv tokens
+                console.log("interestEarned in terms of yv tokens: ",interestEarned);
                 uint256 reserveFactor = _pool.getReserveData(_underlyingAsset, _tranche).configuration.getReserveFactor();
-                uint256 amountToTrancheAdmin = interestEarned.percentMul(reserveFactor);
+                console.log("reserveFactor: ",reserveFactor);
+                console.log("_VMEXReserveFactor: ",_VMEXReserveFactor);
+                uint256 amountToTrancheAdmin = (interestEarned).percentMul(reserveFactor); //how much curve tokens to give, converted to yv tokens
+                console.log("amountToTrancheAdmin: ",amountToTrancheAdmin);
                 uint256 amountToVMEXAdmin = (interestEarned-amountToTrancheAdmin).percentMul(_VMEXReserveFactor);
+                console.log("amountToVMEXAdmin: ",amountToVMEXAdmin);
+                console.log("amount: ",amount);
                 userAmount = amount -  amountToTrancheAdmin - amountToVMEXAdmin;
+                console.log("userAmount: ",userAmount);
                 mintToTreasury(amountToTrancheAdmin, index);
                 mintToVMEXTreasury(amountToVMEXAdmin, index);
             }
@@ -216,6 +225,8 @@ contract AToken is
             // withdraw from strategy
             IBaseStrategy(_strategy).withdraw(amount);
         }
+
+        _burn(user, amountScaled); // Burn the entire amount of atokens that the user has, not just the amount they receive
         
         //but only give user their amount
         IERC20(_underlyingAsset).safeTransfer(receiverOfUnderlying, userAmount);

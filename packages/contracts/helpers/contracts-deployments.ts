@@ -73,6 +73,7 @@ import {
   // CurveOracleV1Factory,
   BaseUniswapOracleFactory,
   MockStrategyFactory,
+  YearnTokenMockedFactory,
 } from "../types";
 import { CrvLpStrategyLibraryAddresses } from "../types/CrvLpStrategyFactory";
 import {
@@ -943,6 +944,16 @@ export const deployWETHMocked = async (verify?: boolean) =>
   withSaveAndVerify(
     await new WETH9MockedFactory(await getFirstSigner()).deploy(),
     eContractid.WETHMocked,
+    [],
+    verify
+  );
+
+export const deployYearnTokenMocked = async (
+  args: [string, string, string, string],
+  verify?: boolean) =>
+  withSaveAndVerify(
+    await new YearnTokenMockedFactory(await getFirstSigner()).deploy(...args),
+    eContractid.YearnTokenMocked,
     [],
     verify
   );
