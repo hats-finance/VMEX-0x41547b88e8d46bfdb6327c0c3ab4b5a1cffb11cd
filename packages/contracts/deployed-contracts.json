@@ -23,7 +23,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "hardhat": {
-      "address": "0xc11f8E173ee67ffA7BBdD185D2399994AAd23Ec6",
+      "address": "0xB30914453D4CeB5B9a3bD9460D039391D787D33f",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "goerli": {
@@ -89,7 +89,8 @@
       "address": "0xF558cbCe44480Ec342B727bbaC44fD11387F61fd"
     },
     "hardhat": {
-      "address": "0xcFB4657fbcdc102D7dE6A3217322d1c41eD31FdB"
+      "address": "0xfec95864b4f5d68158C1c67981Bd5Ca0bC651571",
+      "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "goerli": {
       "address": "0x9B0baDC6fb17802F8d32b183700C3B957273aeDb"
