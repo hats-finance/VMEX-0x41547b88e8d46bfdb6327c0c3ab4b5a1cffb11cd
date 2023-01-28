@@ -2,7 +2,6 @@
   "name": "@vmexfinance/contracts",
   "version": "1.0.4-alpha",
   "description": "VMEX V1 smart contracts",
-  "private": false,
   "files": [
     "contracts",
     "artifacts",
@@ -114,7 +113,7 @@
     "ethereumjs-util": "7.0.2",
     "ethers": "^5.7.2",
     "globby": "^11.0.1",
-    "hardhat": "^2.12.0",
+    "hardhat": "^2.12.6",
     "hardhat-contract-sizer": "^2.6.1",
     "hardhat-deploy": "^0.11.12",
     "hardhat-gas-reporter": "^1.0.0",
@@ -153,7 +152,7 @@
   ],
   "license": "AGPLv3",
   "dependencies": {
-    "hardhat": "^2.12.4",
+    "@chainlink/contracts": "^0.6.0",
     "mocha": "^10.2.0"
   },
   "keywords": [

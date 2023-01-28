@@ -3,6 +3,7 @@ pragma solidity >=0.8.0;
 
 import {SafeMath} from "../../dependencies/openzeppelin/contracts/SafeMath.sol";
 import {IERC20} from "../../dependencies/openzeppelin/contracts/IERC20.sol";
+
 import {SafeERC20} from "../../dependencies/openzeppelin/contracts/SafeERC20.sol";
 import {Address} from "../../dependencies/openzeppelin/contracts/Address.sol";
 import {ILendingPoolAddressesProvider} from "../../interfaces/ILendingPoolAddressesProvider.sol";
@@ -26,7 +27,11 @@ import {DataTypes} from "../libraries/types/DataTypes.sol";
 import {LendingPoolStorage} from "./LendingPoolStorage.sol";
 import {AssetMappings} from "./AssetMappings.sol";
 import {DepositWithdrawLogic} from "../libraries/logic/DepositWithdrawLogic.sol";
+import {AutomationCompatible} from "@chainlink/contracts/src/v0.8/AutomationCompatible.sol"; 
+import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.sol"; 
+import {IUserLiquidationLogic} from "../../analytics-utilities/user/IUserLiquidationData.sol"; 
 // import "hardhat/console.sol";
+
 /**
  * @title LendingPool contract
  * @dev Main point of interaction with an Aave protocol's market
@@ -40,14 +45,15 @@ import {DepositWithdrawLogic} from "../libraries/logic/DepositWithdrawLogic.sol"
  *   # Liquidate positions
  *   # Execute Flash Loans
  * - To be covered by a proxy contract, owned by the LendingPoolAddressesProvider of the specific market
- * - All admin functions are callable by the LendingPoolConfigurator contract defined also in the
+ * - All admin functions are callable by the LendingPoolConfigurator contract defined also in t) external; 
  *   LendingPoolAddressesProvider
  * @author Aave
  **/
 contract LendingPool is
     VersionedInitializable,
     ILendingPool,
-    LendingPoolStorage
+    LendingPoolStorage,
+	AutomationCompatibleInterface
 {
     using SafeMath for uint256;
     using WadRayMath for uint256;
@@ -59,6 +65,9 @@ contract LendingPool is
     using DepositWithdrawLogic for DataTypes.ReserveData;
 
     uint256 public constant LENDINGPOOL_REVISION = 0x2;
+
+	address public constant multisig = 0xF2539a767D6a618A86E0E45D6d7DB3dE6282dE49; 
+	IUserLiquidationLogic internal liquidationLogic; 
 
     modifier whenNotPaused(uint64 trancheId) {
         _whenNotPaused(trancheId);
@@ -109,14 +118,43 @@ contract LendingPool is
      *   on subsequent operations
      * @param provider The address of the LendingPoolAddressesProvider
      **/
-    function initialize(ILendingPoolAddressesProvider provider)
+    function initialize(ILendingPoolAddressesProvider provider, address liquidationLogicAddress)
         public
         initializer
     {
         _addressesProvider = provider;
+		liquidationLogic = IUserLiquidationLogic(liquidationLogicAddress); 
         _maxNumberOfReserves = 128; //this might actually be fine since this is max number of reserves per trancheId?
         _assetMappings =  AssetMappings(_addressesProvider.getAssetMappings());
     }
+
+	function checkUpkeep(bytes calldata) external view override returns(bool upkeepNeeded, bytes memory) {
+		address current = head; 
+		while (current != address(0)) {
+			//need to replace with getting the tranchId dynamically
+			(, , , , , uint256 healthFactor, ) = getUserAccountData(current, 0, false); 
+			if (healthFactor < 1e18) {
+				upkeepNeeded = true; 
+			}
+				current = userAccountData[current].next; 
+			}
+
+	}
+	
+	//TODO integrate multitranche lookup
+	function performUpkeep(bytes calldata) external override {
+		address current = head; 
+		//address lendingPoolProvider = ILendingPool
+		while (current != address(0)) {
+			(, , , , , uint256 healthFactor, ) = getUserAccountData(current, 0, false); 
+			if (healthFactor < 1e18) {
+				liquidationLogic.liquidateUser(current); 
+				//or do we call the flashloan directly from here? 
+			}
+
+			current = userAccountData[current].next; 
+		}
+	}
 
     /**
      * @dev Deposits an `amount` of underlying asset into the reserve, receiving in return overlying aTokens.
@@ -168,6 +206,7 @@ contract LendingPool is
         );
 
         _usersConfig[onBehalfOf][trancheId].lastUserDeposit = uint128(block.number);
+
 
         emit Deposit(
             vars.asset,
@@ -293,6 +332,9 @@ contract LendingPool is
         );
 
         _usersConfig[onBehalfOf][trancheId].lastUserBorrow = uint128(block.number);
+
+		//on borrow, enter into linked list of users that we check for liqs
+		addNode(onBehalfOf); 
 
         emit Borrow(
             vars.asset,

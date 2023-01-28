@@ -5,7 +5,6 @@
   "main": "dist/index.js",
   "author": "VMEX finance",
   "license": "MIT",
-  "private": false,
   "dependencies": {
     "@vmexfinance/contracts": "^1.0.4-alpha",
     "chai": "^4.3.6",

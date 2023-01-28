@@ -122,7 +122,6 @@ library QueryUserHelpers {
         ILendingPool lendingPool = ILendingPool(
             ILendingPoolAddressesProvider(addressesProvider).getLendingPool());
         
-        
 
         vars.allAssets = lendingPool.getReservesList(tranche);
         vars.tempSuppliedAssetData = new SuppliedAssetData[](vars.allAssets.length);
