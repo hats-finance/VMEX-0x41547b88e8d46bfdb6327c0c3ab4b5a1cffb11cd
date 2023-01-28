@@ -74,6 +74,8 @@ import {
   MockStrategyFactory,
   YearnTokenMockedFactory,
   WETH9Mocked,
+  UserLiquidationLogicFactory,
+  FlashLoanLiquidationFactory,
 } from "../types";
 import { CrvLpStrategyLibraryAddresses } from "../types/CrvLpStrategyFactory";
 import {
@@ -1722,12 +1724,51 @@ export const deployParaSwapLiquiditySwapAdapter = async (
     verify
   );
 
-  export const deployAssetMapping = async (
-    verify?: boolean
-  ) =>
-    withSaveAndVerify(
-      await new AssetMappingsFactory(await getFirstSigner()).deploy(),
-      eContractid.AssetMappings,
-      [],
-      verify
-    );
+export const deployAssetMapping = async (
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new AssetMappingsFactory(await getFirstSigner()).deploy(),
+    eContractid.AssetMappings,
+    [],
+    verify
+  );
+
+export const deployFlashLoanLiquidation = async (
+  args: [tEthereumAddress, tEthereumAddress],
+  verify?: boolean
+) => {
+  const flashloan = await new FlashLoanLiquidationFactory(
+    await getFirstSigner()
+  ).deploy(...args);
+  await insertContractAddressInDb(
+    eContractid.FlashLoan,
+    flashloan.address
+  );
+  return withSaveAndVerify(
+    flashloan,
+    eContractid.FlashLoan,
+    [],
+    verify
+  );
+};
+
+export const deployUserLiquidationLogic = async (
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
+  verify?: boolean
+) => {
+  console.log("Args: ", args)
+  const userLiquidationLogic = await new UserLiquidationLogicFactory(
+    await getFirstSigner()
+  ).deploy(...args);
+  await insertContractAddressInDb(
+    eContractid.UserLiquidationLogic,
+    userLiquidationLogic.address
+  );
+  return withSaveAndVerify(
+    userLiquidationLogic,
+    eContractid.UserLiquidationLogic,
+    [],
+    verify
+  );
+};

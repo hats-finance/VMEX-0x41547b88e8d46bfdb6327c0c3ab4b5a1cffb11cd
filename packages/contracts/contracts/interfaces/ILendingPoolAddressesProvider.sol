@@ -38,6 +38,7 @@ interface ILendingPoolAddressesProvider {
     event ATokenUpdated(address indexed newAddress);
     event StableDebtUpdated(address indexed newAddress);
     event VariableDebtUpdated(address indexed newAddress);
+    event UserLiquidationLogicUpdated(address indexed newAddress);
 
     function getVMEXTreasury() external view returns(address);
 
@@ -111,4 +112,7 @@ interface ILendingPoolAddressesProvider {
 
     function getAssetMappings() external view returns (address);
     function setAssetMappingsImpl(address pool) external;
+
+    function getUserLiquidationLogic() external view returns(address);
+    function setUserLiquidiationLogic(address add) external;
 }

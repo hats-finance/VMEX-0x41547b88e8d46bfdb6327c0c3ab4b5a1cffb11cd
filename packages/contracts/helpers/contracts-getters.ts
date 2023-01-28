@@ -39,7 +39,10 @@ import {
   VStrategyHelperFactory,
   UserConfigurationFactory,
   BaseUniswapOracleFactory,
-  YearnTokenMockedFactory
+  YearnTokenMockedFactory,
+  FlashLoanLiquidationFactory,
+  UserLiquidationLogic,
+  UserLiquidationLogicFactory
 } from "../types";
 import { IERC20DetailedFactory } from "../types/IERC20DetailedFactory";
 import { getEthersSigners, MockTokenMap } from "./contracts-helpers";
@@ -642,3 +645,33 @@ export const getParaSwapLiquiditySwapAdapter = async (
       ).address,
     await getFirstSigner()
   );
+
+export const getFlashLoanLiquidation = async (
+  address?: tEthereumAddress
+) =>
+  await FlashLoanLiquidationFactory.connect(
+    address ||
+      (
+        await getDb()
+          .get(
+            `${eContractid.FlashLoan}.${DRE.network.name}`
+          )
+          .value()
+      ).address,
+    await getFirstSigner()
+  );
+  
+  export const getUserLiquidationLogic = async (
+    address?: tEthereumAddress
+  ) =>
+    await UserLiquidationLogicFactory.connect(
+      address ||
+        (
+          await getDb()
+            .get(
+              `${eContractid.UserLiquidationLogic}.${DRE.network.name}`
+            )
+            .value()
+        ).address,
+      await getFirstSigner()
+    );

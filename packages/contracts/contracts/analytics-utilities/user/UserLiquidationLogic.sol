@@ -5,7 +5,6 @@ import { QueryUserHelpers } from "../libs/QueryUserHelpers.sol";
 import { LendingPoolConfigurator } from "../../protocol/lendingpool/LendingPoolConfigurator.sol";
 import { ILendingPoolAddressesProvider } from "../../interfaces/ILendingPoolAddressesProvider.sol";
 import {ILendingPool} from "../../interfaces/ILendingPool.sol"; 
-import {FlashLoanLiquidation} from "../../flashloan/FlashLoanLiquidation.sol"; 
 import {IFlashFloanLiquidation} from "../../flashloan/IFlashLoanLiquidation.sol"; 
 
 

@@ -66,9 +66,6 @@ contract LendingPool is
 
     uint256 public constant LENDINGPOOL_REVISION = 0x2;
 
-	address public constant multisig = 0xF2539a767D6a618A86E0E45D6d7DB3dE6282dE49; 
-	IUserLiquidationLogic internal liquidationLogic; 
-
     modifier whenNotPaused(uint64 trancheId) {
         _whenNotPaused(trancheId);
         _;
@@ -118,12 +115,11 @@ contract LendingPool is
      *   on subsequent operations
      * @param provider The address of the LendingPoolAddressesProvider
      **/
-    function initialize(ILendingPoolAddressesProvider provider, address liquidationLogicAddress)
+    function initialize(ILendingPoolAddressesProvider provider)
         public
         initializer
     {
         _addressesProvider = provider;
-		liquidationLogic = IUserLiquidationLogic(liquidationLogicAddress); 
         _maxNumberOfReserves = 128; //this might actually be fine since this is max number of reserves per trancheId?
         _assetMappings =  AssetMappings(_addressesProvider.getAssetMappings());
     }
@@ -142,7 +138,9 @@ contract LendingPool is
 	}
 	
 	//TODO integrate multitranche lookup
+    //TODO: protect from external calls (modifier)
 	function performUpkeep(bytes calldata) external override {
+        IUserLiquidationLogic liquidationLogic = IUserLiquidationLogic(_addressesProvider.getUserLiquidationLogic());
 		address current = head; 
 		//address lendingPoolProvider = ILendingPool
 		while (current != address(0)) {

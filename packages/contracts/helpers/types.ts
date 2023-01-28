@@ -127,6 +127,8 @@ export enum eContractid {
   BaseUniswapOracle = "BaseUniswapOracle",
   MockStrategy = "MockStrategy",
   YearnTokenMocked="YearnTokenMocked",
+  FlashLoan="FlashLoan",
+  UserLiquidationLogic="UserLiquidationLogic",
 }
 
 /*

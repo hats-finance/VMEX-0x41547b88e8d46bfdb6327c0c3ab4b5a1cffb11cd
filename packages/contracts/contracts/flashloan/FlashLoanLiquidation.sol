@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
-import {UserLiquidationLogic} from "../analytics-utilities/user/UserLiquidationData.sol"; 
+import {UserLiquidationLogic} from "../analytics-utilities/user/UserLiquidationLogic.sol"; 
 //actual aave implementations
 import {FlashLoanReceiverBase} from "../dependencies/aavev08/FlashLoanReceiverBase.sol";
 import {ILendingPoolAddressesProvider} from "../dependencies/aavev08/ILendingPoolAddressProvider.sol";

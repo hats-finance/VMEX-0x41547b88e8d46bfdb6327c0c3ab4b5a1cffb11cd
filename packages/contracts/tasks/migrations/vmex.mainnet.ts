@@ -14,6 +14,7 @@ task("vmex:mainnet", "Deploy development enviroment")
     console.log("Network name initial: ", DRE.network.name);
     const POOL_NAME = ConfigNames.Aave;
     await DRE.run("set-DRE");
+    console.log("Verify: ",verify)
 
     // Prevent loss of gas verifying all the needed ENVs for Etherscan verification
     if (verify) {
@@ -53,6 +54,11 @@ task("vmex:mainnet", "Deploy development enviroment")
 
     console.log("6.2. Initialize lending pool tranche 1");
     await DRE.run("full:initialize-lending-pool-tranches-1", {
+      pool: POOL_NAME,
+    });
+
+    console.log("7. Deploy user liquidation logic");
+    await DRE.run("full:liquidations-deployment", {
       pool: POOL_NAME,
     });
 

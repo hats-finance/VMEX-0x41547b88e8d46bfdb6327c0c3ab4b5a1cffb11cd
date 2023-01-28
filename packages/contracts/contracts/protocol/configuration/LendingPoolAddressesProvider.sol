@@ -55,6 +55,8 @@ contract LendingPoolAddressesProvider is
     bytes32 private constant ASSET_MAPPINGS = "ASSET_MAPPINGS";
     bytes32 private constant VMEX_TREASURY_ADDRESS = "VMEX_TREASURY_ADDRESS";
 
+    bytes32 private constant USER_LIQUIDATION_LOGIC = "USER_LIQUIDATION_LOGIC";
+
     constructor(string memory marketId) {
         _setMarketId(marketId);
         permissionlessTranches = false;
@@ -448,5 +450,15 @@ contract LendingPoolAddressesProvider is
     function setAssetMappingsImpl(address assetMappings) external override onlyOwner{
         _updateImpl(ASSET_MAPPINGS, assetMappings);
         emit AssetMappingsUpdated(assetMappings);
+    }
+
+
+    function getUserLiquidationLogic() external view override returns(address){
+        return getAddress(USER_LIQUIDATION_LOGIC);
+    }
+
+    function setUserLiquidiationLogic(address add) external override onlyOwner {
+        _addresses[USER_LIQUIDATION_LOGIC] = add;
+        emit UserLiquidationLogicUpdated(add);
     }
 }
