@@ -38,4 +38,45 @@ contract LendingPoolStorage {
     mapping(uint64 => bool) public isUsingWhitelist;
     mapping(uint64 => mapping(address=>bool)) whitelist; //tranche to user address to boolean on whether user is whitelisted
     mapping(uint64 => mapping(address=>bool)) blacklist;
+
+
+	//used for linked list liquidations
+	address internal head; 
+	address internal tail; 
+	mapping(address => DataTypes.UserAccountData) internal userAccountData; 
+
+	function addNode(address user) internal {
+		if (head == address(0)) {
+			head = user; 
+			tail = user; 
+		} else {
+			userAccountData[user].prev = tail; 
+			userAccountData[tail].next = user; 
+			tail = user; 
+		}	
+	}
+
+	function removeNode(address user) internal {
+		address newNext = userAccountData[user].next; 	
+		address newPrev = userAccountData[user].prev; 
+
+		if (user == head) {
+			head = newNext; 
+			userAccountData[newNext].prev = address(0); 
+		} else if (user == tail) {
+			tail = newPrev; 		
+			userAccountData[newPrev].next = address(0); 
+		} else {
+			userAccountData[newPrev].next = newNext; 
+			userAccountData[newNext].prev = newPrev; 
+		}
+	}
+	
+	function getUserList(address user) internal returns (address, address) {
+		return (
+			userAccountData[user].next, 
+			userAccountData[user].prev
+		); 
+	}
+
 }

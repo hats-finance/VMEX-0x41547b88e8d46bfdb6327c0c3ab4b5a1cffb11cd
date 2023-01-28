@@ -172,4 +172,10 @@ library DataTypes {
         uint256 reserveFactor;
         uint256 globalVMEXReserveFactor;
     }
+
+	struct UserAccountData {
+		bool isUnderwater; 
+		address next; 
+		address prev; 
+	}
 }
