@@ -113,6 +113,9 @@ interface ILendingPoolAddressesProvider {
     function getAssetMappings() external view returns (address);
     function setAssetMappingsImpl(address pool) external;
 
-    function getUserLiquidationLogic() external view returns(address);
-    function setUserLiquidiationLogic(address add) external;
+    // function getUserLiquidationLogic() external view returns(address);
+    // function setUserLiquidiationLogic(address add) external;
+
+    // function getFlashLoanLiquidation() external view returns(address);
+    // function setFlashLoanLiquidation(address add) external;
 }

@@ -29,7 +29,11 @@ import {AssetMappings} from "./AssetMappings.sol";
 import {DepositWithdrawLogic} from "../libraries/logic/DepositWithdrawLogic.sol";
 import {AutomationCompatible} from "@chainlink/contracts/src/v0.8/AutomationCompatible.sol"; 
 import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.sol"; 
-import {IUserLiquidationLogic} from "../../analytics-utilities/user/IUserLiquidationData.sol"; 
+import {UserLiquidationLogic} from "../../analytics-utilities/user/UserLiquidationLogic.sol"; 
+import {IFlashLoanSimpleReceiver} from "@aave/core-v3/contracts/flashloan/interfaces/IFlashLoanSimpleReceiver.sol"; 
+import {IPoolAddressesProvider} from '@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol';
+import {IPool} from '@aave/core-v3/contracts/interfaces/IPool.sol';
+
 // import "hardhat/console.sol";
 
 /**
@@ -53,7 +57,8 @@ contract LendingPool is
     VersionedInitializable,
     ILendingPool,
     LendingPoolStorage,
-	AutomationCompatibleInterface
+	AutomationCompatibleInterface,
+    IFlashLoanSimpleReceiver
 {
     using SafeMath for uint256;
     using WadRayMath for uint256;
@@ -65,6 +70,11 @@ contract LendingPool is
     using DepositWithdrawLogic for DataTypes.ReserveData;
 
     uint256 public constant LENDINGPOOL_REVISION = 0x2;
+
+    // TODO: change to testnet addresses manually
+    IPoolAddressesProvider public constant override ADDRESSES_PROVIDER = IPoolAddressesProvider(0x2f39d218133AFaB8F2B819B1066c7E434Ad94E9e); //mainnet AAVE's 
+    IPool public constant override POOL = IPool(0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2); //mainnet AAVE's 
+
 
     modifier whenNotPaused(uint64 trancheId) {
         _whenNotPaused(trancheId);
@@ -124,10 +134,21 @@ contract LendingPool is
         _assetMappings =  AssetMappings(_addressesProvider.getAssetMappings());
     }
 
-	function checkUpkeep(bytes calldata) external view override returns(bool upkeepNeeded, bytes memory) {
+    function executeOperation(
+    	address asset,
+    	uint256 amount,
+    	uint256 premium,
+    	address initiator,
+    	bytes calldata params
+	) external override returns (bool){
+        return UserLiquidationLogic._executeOperation(POOL, asset, amount, premium, initiator, params);
+	}
+
+	function checkUpkeep(bytes calldata checkData) external view override returns(bool upkeepNeeded, bytes memory performData) {
 		address current = head; 
+
 		while (current != address(0)) {
-			//need to replace with getting the tranchId dynamically
+			//need to replace with getting the trancheId dynamically
 			(, , , , , uint256 healthFactor, ) = getUserAccountData(current, 0, false); 
 			if (healthFactor < 1e18) {
 				upkeepNeeded = true; 
@@ -140,13 +161,12 @@ contract LendingPool is
 	//TODO integrate multitranche lookup
     //TODO: protect from external calls (modifier)
 	function performUpkeep(bytes calldata) external override {
-        IUserLiquidationLogic liquidationLogic = IUserLiquidationLogic(_addressesProvider.getUserLiquidationLogic());
 		address current = head; 
 		//address lendingPoolProvider = ILendingPool
 		while (current != address(0)) {
 			(, , , , , uint256 healthFactor, ) = getUserAccountData(current, 0, false); 
 			if (healthFactor < 1e18) {
-				liquidationLogic.liquidateUser(current); 
+				UserLiquidationLogic.liquidateUser(current, _addressesProvider, POOL); 
 				//or do we call the flashloan directly from here? 
 			}
 

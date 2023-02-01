@@ -3,18 +3,15 @@ pragma solidity >=0.8.0;
 
 import { QueryUserHelpers } from "../libs/QueryUserHelpers.sol";
 import { LendingPoolConfigurator } from "../../protocol/lendingpool/LendingPoolConfigurator.sol";
+import { LendingPoolStorage } from "../../protocol/lendingpool/LendingPoolStorage.sol";
 import { ILendingPoolAddressesProvider } from "../../interfaces/ILendingPoolAddressesProvider.sol";
 import {ILendingPool} from "../../interfaces/ILendingPool.sol"; 
-import {IFlashFloanLiquidation} from "../../flashloan/IFlashLoanLiquidation.sol"; 
+import {FlashLoanLiquidation} from "../../flashloan/FlashLoanLiquidationV3.sol"; 
+import {IFlashLoanSimpleReceiver} from "@aave/core-v3/contracts/flashloan/interfaces/IFlashLoanSimpleReceiver.sol"; 
+import {IPool} from '@aave/core-v3/contracts/interfaces/IPool.sol';
 
-
-contract UserLiquidationLogic {
-		
-	uint64 internal totalTranches; 
-	address internal addressProvider; 
-	address internal lendingPool;
-	IFlashFloanLiquidation internal flashLoanLiquidation; 
-
+// import {IUserLiquidationLogic} from "./IUserLiquidationData.sol";
+library UserLiquidationLogic {
 	struct LiquidationParams {
 		address collateralAsset;
 		address debtAsset; 
@@ -26,17 +23,19 @@ contract UserLiquidationLogic {
 		uint256 availableBorrowsETH; 
 	}
 
-	constructor(address _addressProvider, address _lendingPool, IFlashFloanLiquidation _flashLoanLiquidation) {
-		addressProvider = _addressProvider; 
-		lendingPool = _lendingPool; 
-		flashLoanLiquidation = _flashLoanLiquidation; 
-        totalTranches = LendingPoolConfigurator(
-            ILendingPoolAddressesProvider(_addressProvider).getLendingPoolConfigurator()
-        ).totalTranches();
-	}	
+	function _executeOperation(
+		IPool POOL,
+    	address asset,
+    	uint256 amount,
+    	uint256 premium,
+    	address initiator,
+    	bytes calldata params
+	) public returns (bool){
+		return FlashLoanLiquidation._executeOperation(POOL, asset, amount, premium, initiator, params);
+	}
 
 
-	function liquidateUser(address user) external {
+	function liquidateUser(address user, ILendingPoolAddressesProvider _addressesProvider, IPool POOL) public {
 		//collateralAsset - underlying token we are liquidating 
 		//debtAsset - underlying borrowed asset to be repaid
 		//trancheID 
@@ -45,13 +44,14 @@ contract UserLiquidationLogic {
 		//receiveAToken - bool, yes or no? 
 				
 		//first, we want to check which tranches are liquidatable
-		TrancheData[] memory activeTranches = getActiveTranches(user); 
+		TrancheData[] memory activeTranches = getActiveTranches(user, _addressesProvider); 
 		for (uint64 i = 0; i < activeTranches.length; i++) {
 			LiquidationParams memory params = 
-				getUserPositionDataPerTranche(user, i, activeTranches[i].availableBorrowsETH);
+				getUserPositionDataPerTranche(user, i, activeTranches[i].availableBorrowsETH, _addressesProvider);
 
 			//flashloan here? 
-			flashLoanLiquidation.flashLoanCall(
+			FlashLoanLiquidation.flashLoanCall(
+				POOL,
 				params.collateralAsset, 
 				params.debtAsset, 
 				activeTranches[i].id, 
@@ -62,8 +62,9 @@ contract UserLiquidationLogic {
 	}
 		
 
-	function getActiveTranches(address user) 
+	function getActiveTranches(address user, ILendingPoolAddressesProvider _addressesProvider) 
 		internal view returns (TrancheData[] memory trancheData) {	
+		uint256 totalTranches = LendingPoolConfigurator(_addressesProvider.getLendingPoolConfigurator()).totalTranches();
 
 		trancheData = new TrancheData[](totalTranches); 	
 
@@ -72,7 +73,7 @@ contract UserLiquidationLogic {
 			new QueryUserHelpers.UserTrancheData[](totalTranches); 
 
         for (uint64 i = 0; i < totalTranches; i++) {
-			userTrancheData[i] = QueryUserHelpers.getUserTrancheData(user, i, addressProvider);
+			userTrancheData[i] = QueryUserHelpers.getUserTrancheData(user, i, address(_addressesProvider));
 			if (userTrancheData[i].healthFactor < 1) {
 				trancheData[i].id = i; 
 				trancheData[i].availableBorrowsETH = userTrancheData[i].availableBorrowsETH; 
@@ -86,14 +87,15 @@ contract UserLiquidationLogic {
 	function getUserPositionDataPerTranche(
 		address user, 
 		uint64 trancheID, 
-		uint256 availableBorrowsETH
+		uint256 availableBorrowsETH, 
+		ILendingPoolAddressesProvider _addressesProvider
 	) internal view returns (LiquidationParams memory liqParams) {
 		(QueryUserHelpers.SuppliedAssetData[] memory supplyArray, 
 		QueryUserHelpers.BorrowedAssetData[] memory borrowArray, ) = 
 			QueryUserHelpers.getUserAssetData(
 				user, 
 				trancheID, 
-				addressProvider, 
+				address(_addressesProvider), 
 				availableBorrowsETH
 		); 
 		

@@ -835,6 +835,40 @@ export const deployDepositWithdrawLogic = async (
   );
 };
 
+
+export const deployUserLiquidationLogic = async (
+  verify?: boolean
+) => {
+  const depositWithdrawLogicArtifact = await readArtifact(
+    eContractid.DepositWithdrawLogic
+  );
+
+  const linkedValidationLogicByteCode = linkBytecode(
+    depositWithdrawLogicArtifact,
+    {
+      [eContractid.ReserveLogic]: reserveLogic.address,
+      [eContractid.GenericLogic]: genericLogic.address,
+      [eContractid.ValidationLogic]: validationLogic.address,
+    }
+  );
+
+  const depositWithdrawLogicFactory = await DRE.ethers.getContractFactory(
+    depositWithdrawLogicArtifact.abi,
+    linkedValidationLogicByteCode
+  );
+
+  const depositWithdrawLogic = await (
+    await depositWithdrawLogicFactory.connect(await getFirstSigner()).deploy()
+  ).deployed();
+
+  return withSaveAndVerify(
+    depositWithdrawLogic,
+    eContractid.DepositWithdrawLogic,
+    [],
+    verify
+  );
+};
+
 export const deployAaveLibraries = async (
   verify?: boolean
 ): Promise<LendingPoolLibraryAddresses> => {
@@ -846,6 +880,12 @@ export const deployAaveLibraries = async (
     verify
   );
   const depositWithdrawLogic = await deployDepositWithdrawLogic(
+    reserveLogic,
+    genericLogic,
+    validationLogic,
+    verify
+  );
+  const UserLiquidationLogic = await deployDepositWithdrawLogic(
     reserveLogic,
     genericLogic,
     validationLogic,

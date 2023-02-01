@@ -1,6 +1,5 @@
 import hre from "hardhat"
 import UserTokenBalance from "../artifacts/contracts/analytics/UserTokenBalance.sol/UserTokenBalance.json";
-import { TOKEN_ADDR_MAINNET } from "../dist/src.ts/constants";
 const { ethers } = hre;
 import _ from "lodash";
 

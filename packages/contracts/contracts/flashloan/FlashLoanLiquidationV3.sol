@@ -3,32 +3,28 @@ pragma solidity >=0.8.0;
 
 import {UserLiquidationLogic} from "../analytics-utilities/user/UserLiquidationLogic.sol"; 
 //actual aave implementations
-import {FlashLoanSimpleReceiverBase} from "@aave/core-v3/contracts/flashloan/base/FlashLoanSimpleReceiverBase.sol"; 
+import {IFlashLoanSimpleReceiver} from "@aave/core-v3/contracts/flashloan/interfaces/IFlashLoanSimpleReceiver.sol"; 
 import {IPoolAddressesProvider} from "@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol"; 
 //vmex lending pool
 import {ILendingPool} from "../interfaces/ILendingPool.sol"; 
+import {ILendingPoolAddressesProvider} from "../interfaces/ILendingPoolAddressesProvider.sol";
 import {IERC20} from "../dependencies/openzeppelin/contracts/IERC20.sol"; 
+import {IPool} from '@aave/core-v3/contracts/interfaces/IPool.sol';
 
-contract FlashLoanLiquidation is FlashLoanSimpleReceiverBase { 
-	
-	ILendingPool internal lendingPool; //vmex 
+library FlashLoanLiquidation  { 
 	IPoolAddressesProvider internal constant aaveAddressesProvider = 
 		IPoolAddressesProvider(0x2f39d218133AFaB8F2B819B1066c7E434Ad94E9e); 
-	
-	//NOTE: this is aave's address provider, and VMEX's lending pool
-	constructor(ILendingPool _lendingPool) FlashLoanSimpleReceiverBase(aaveAddressesProvider) { 
-		lendingPool = _lendingPool; 
-	}
-
 
 	//checkUpkeep --> performUpkeep --> flashloanCall --> executeOperation 
-	function executeOperation(
+	function _executeOperation(
+		// ILendingPool lendingPool, //this would just be address(this)
+		IPool POOL,
     	address asset,
     	uint256 amount,
     	uint256 premium,
     	address initiator,
     	bytes calldata params
-	) external override returns (bool){
+	) internal returns (bool){
 	
 	
 	//TODO check if borrowed asset is what we need, do swaps as necessary
@@ -36,7 +32,7 @@ contract FlashLoanLiquidation is FlashLoanSimpleReceiverBase {
 	FlashLoanData memory decodedParams = abi.decode(params, (FlashLoanData)); 
 
 	//vmex liquidation			
-	lendingPool.liquidationCall(
+	ILendingPool(address(this)).liquidationCall(
 		decodedParams.collateralAsset,
 		decodedParams.debtAsset,
 		decodedParams.trancheId,
@@ -62,11 +58,13 @@ contract FlashLoanLiquidation is FlashLoanSimpleReceiverBase {
 	
 	//
 	function flashLoanCall(
+		IPool POOL,
 		address collateralAsset, 
 		address debtAsset,
 		uint64 trancheId, 
 		address user, 
-		uint256 amountDebt) public {
+		uint256 amountDebt
+	) internal {
 
 		bytes memory params = abi.encode(FlashLoanData({
 			collateralAsset: collateralAsset,
@@ -77,7 +75,7 @@ contract FlashLoanLiquidation is FlashLoanSimpleReceiverBase {
 		); 
 
 		POOL.flashLoanSimple(
-			address(this), //receiver
+			address(this), //receiver. In delegateCall setting (inlcuding libraries), this would be the lendingpool.
 			debtAsset, //we pay down debt so we need the flashloan in the debt asset? 
 			amountDebt, 
 			params, 

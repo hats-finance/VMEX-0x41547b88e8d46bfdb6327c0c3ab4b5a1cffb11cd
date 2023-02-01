@@ -453,12 +453,12 @@ contract LendingPoolAddressesProvider is
     }
 
 
-    function getUserLiquidationLogic() external view override returns(address){
-        return getAddress(USER_LIQUIDATION_LOGIC);
-    }
+    // function getUserLiquidationLogic() external view override returns(address){
+    //     return getAddress(USER_LIQUIDATION_LOGIC);
+    // }
 
-    function setUserLiquidiationLogic(address add) external override onlyOwner {
-        _addresses[USER_LIQUIDATION_LOGIC] = add;
-        emit UserLiquidationLogicUpdated(add);
-    }
+    // function setUserLiquidiationLogic(address add) external override onlyOwner {
+    //     _addresses[USER_LIQUIDATION_LOGIC] = add;
+    //     emit UserLiquidationLogicUpdated(add);
+    // }
 }
