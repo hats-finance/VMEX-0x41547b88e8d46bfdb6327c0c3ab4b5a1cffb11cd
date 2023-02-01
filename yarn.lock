@@ -2,6 +2,11 @@
 # yarn lockfile v1
 
 
+"@aave/core-v3@^1.17.1":
+  version "1.17.1"
+  resolved "https://registry.yarnpkg.com/@aave/core-v3/-/core-v3-1.17.1.tgz#acf7d011a8aff146b3110667c06184193ddbced7"
+  integrity sha512-OAHtclfz4LvHDF5Sh2RUfBtOHkEXe0r9xocrAv+3XSiH3hkSh/tzwxdiKGQimqFHR1fyULiVvuOjp6Q5yK4r8A==
+
 "@ampproject/remapping@^2.1.0":
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/@ampproject/remapping/-/remapping-2.2.0.tgz#56c133824780de3174aed5ab6834f3026790154d"
