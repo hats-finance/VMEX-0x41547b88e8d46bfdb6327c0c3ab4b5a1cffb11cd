@@ -118,6 +118,7 @@ library ReserveLogic {
      **/
     function updateState(DataTypes.ReserveData storage reserve, uint256 vmexReserveFactor) internal {
         address strategist = IAToken(reserve.aTokenAddress).getStrategy();
+        assert(strategist==address(0));
         if (strategist==address(0)) { //no strategist, so keep original method of calculating
             uint256 scaledVariableDebt = IVariableDebtToken(
                 reserve.variableDebtTokenAddress
