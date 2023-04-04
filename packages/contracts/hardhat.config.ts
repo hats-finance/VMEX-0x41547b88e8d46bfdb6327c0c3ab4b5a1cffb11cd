@@ -19,6 +19,8 @@ import {
 } from './helper-hardhat-config';
 // import "hardhat-contract-sizer";
 import 'hardhat-test-utils';
+import "@nomicfoundation/hardhat-foundry";
+
 
 require('dotenv').config();
 require("@eth-optimism/plugins/hardhat");
