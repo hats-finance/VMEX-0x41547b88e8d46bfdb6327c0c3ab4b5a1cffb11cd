@@ -287,7 +287,6 @@ export async function supply(
         amount.toString()
     );
   }
-
   try {
     if (params.test) {
       tx = await lendingPool.deposit(
@@ -310,7 +309,7 @@ export async function supply(
       );
     }
   } catch (error) {
-    console.log("Lending Pool Failed with ")
+    console.log("Lending Pool Failed with ", error)
     throw new Error(error);
   }
 

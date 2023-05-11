@@ -210,4 +210,4 @@ export const deployments = Deployments;
 export const findTokenAddresses = (symbols: string[], network: string): Map<string, string> =>
 new Map(symbols.map( (entry) => [entry, convertSymbolToAddress(entry.toUpperCase(), network)]));
 
-export const GOERLI_ADDRESSES = findTokenAddresses([...MAINNET_ASSET_MAPPINGS.keys()], "goerli");
+// export const GOERLI_ADDRESSES = findTokenAddresses([...MAINNET_ASSET_MAPPINGS.keys()], "goerli");

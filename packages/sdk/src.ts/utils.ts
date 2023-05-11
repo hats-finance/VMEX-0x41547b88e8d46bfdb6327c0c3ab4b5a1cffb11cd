@@ -15,13 +15,17 @@ import { tokenToString } from "typescript";
 
 export const cache = new CacheContainer(new MemoryStorage());
 
+function isMainnetFork(network: string): boolean {
+  return network == "main" || network == "localhost";
+}
+
 // import { LendingPoolConfiguratorFactory } from "@vmexfinance/contracts/dist";
 export function convertAddressToSymbol(asset: string, network?: string){
   const networkMapping = findTokenAddresses([...MAINNET_ASSET_MAPPINGS.keys()], network || "goerli")
 
   const reverseMapping = flipAndLowerCase(networkMapping);
   return network &&
-    network!="main" ? reverseMapping.get(asset.toLowerCase())
+    !isMainnetFork(network) ? reverseMapping.get(asset.toLowerCase())
     : REVERSE_MAINNET_ASSET_MAPPINGS.get(asset.toLowerCase())
 }
 
@@ -30,9 +34,10 @@ export function convertAddressListToSymbol(assets: string[], network?: string){
 }
 
 export function convertSymbolToAddress(asset: string, network?: string){
+  asset = asset.toUpperCase();
   return network &&
-    network!="main" ? deployments[asset.toUpperCase()][network].address
-    : MAINNET_ASSET_MAPPINGS[asset]
+    !isMainnetFork(network) ? deployments[asset][network].address
+    : MAINNET_ASSET_MAPPINGS.get(asset)
 }
 
 export function getContractAddress(contractName: string, network: string){
@@ -65,7 +70,7 @@ export async function getAssetPrices(
   let _addressProvider =
     deployments.LendingPoolAddressesProvider[params.network || "main"]
       .address;
-  
+
   const assets =  convertListSymbolToAddress(params.assets, params.network);
   let [data] = await decodeConstructorBytecode(abi, bytecode, provider, [
     _addressProvider,
@@ -119,6 +124,7 @@ export const convertToCurrencyDecimals = async (
   providerRpc?: string,
 ) => {
   const token = await getIErc20Detailed(tokenAddress, providerRpc, test);
+  console.log("token to convert to decimals", await token.name())
   let decimals = (await token.decimals()).toString();
 
   return ethers.utils.parseUnits(amount, decimals);
