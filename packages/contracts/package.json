@@ -17,6 +17,7 @@
     "scripts:priceFeed": "hardhat run scripts/test-priceFeed.ts",
     "scripts:getSlots": "hardhat run scripts/get_slot_info.ts",
     "scripts:userBalance": "hardhat run scripts/test-userBalance.ts",
+    "scripts:replay": "hardhat run scripts/replay.ts --network optimism_localhost",
     "hardhat:tenderly-main": "hardhat --network tenderly",
     "hardhat:main": "hardhat --network main",
     "hardhat:docker": "hardhat --network hardhatevm_docker",
