@@ -159,3 +159,8 @@ export const chunk = <T>(arr: Array<T>, chunkSize: number): Array<Array<T>> => {
     []
   );
 };
+
+export const increaseTime = async (provider, secondsToIncrease: number) => {
+  await provider.send('evm_increaseTime', [secondsToIncrease]);
+  await provider.send('evm_mine', []);
+};

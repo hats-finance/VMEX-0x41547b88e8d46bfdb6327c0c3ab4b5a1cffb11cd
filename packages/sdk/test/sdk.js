@@ -62,7 +62,7 @@ if (network == "localhost") {
   providerRpc = "http://127.0.0.1:8545";
   provider = new ethers.providers.JsonRpcProvider(providerRpc);
   temp = provider.getSigner(2);
-  owner = provider.getSigner(0);;
+  owner = provider.getSigner(0);
 } else if (network == "goerli") {
   const myprovider = new ethers.providers.AlchemyProvider(
     network,

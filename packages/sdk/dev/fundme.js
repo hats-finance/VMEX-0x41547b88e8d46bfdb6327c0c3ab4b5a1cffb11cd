@@ -46,7 +46,6 @@ describe("Fund accounts", () => {
     UNISWAP_ROUTER_ADDRESS,
     UNISWAP_ROUTER_ABI
   );
-  const deadline = Math.floor(Date.now() / 1000) + 60 * 20; // 20 minutes from the current Unix time
 
   const uniswapAssets = [
     "0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9",
@@ -129,113 +128,184 @@ describe("Fund accounts", () => {
   });
 
   it("Uniswap ETH for assets", async () => {
-    for(let j =0;j< uniswapAssets.length;j++){
+    const deadline = (await provider.getBlock('latest')).timestamp + 60 * 20; // 20 minutes from the current Unix time
+
+    for (let j = 0; j < uniswapAssets.length; j++) {
       const assetAddr = uniswapAssets[j];
-      console.log(assetAddr)
-      const token = new ethers.Contract(assetAddr,IERC20abi, provider)
+      console.log(assetAddr);
+      const token = new ethers.Contract(assetAddr, IERC20abi, provider);
       const path = [myWETH.address, token.address];
 
-      for(let i =0;i<8;i++){
-        if(assetAddr=='0xdBdb4d16EdA451D0503b854CF79D55697F90c8DF'){
-          if(i>=2){
+      for (let i = 0; i < 8; i++) {
+        if (assetAddr == "0xdBdb4d16EdA451D0503b854CF79D55697F90c8DF") {
+          if (i >= 2) {
             break;
           }
         }
-        try{
-          await UNISWAP_ROUTER_CONTRACT.connect(provider.getSigner(i)).swapExactETHForTokens("0", path, await provider.getSigner(i).getAddress(), deadline,options)
-        } catch(e){
-          console.log("Swap failed: ",e)
+        try {
+          await UNISWAP_ROUTER_CONTRACT.connect(
+            provider.getSigner(i)
+          ).swapExactETHForTokens(
+            "0",
+            path,
+            await provider.getSigner(i).getAddress(),
+            deadline,
+            options
+          );
+        } catch (e) {
+          console.log("Swap failed: ", e);
         }
 
-        var signerAmount = await token.connect(provider.getSigner(i)).balanceOf(await provider.getSigner(i).getAddress())
-        console.log("Amount: ",signerAmount)
+        var signerAmount = await token
+          .connect(provider.getSigner(i))
+          .balanceOf(await provider.getSigner(i).getAddress());
+        console.log("Amount: ", signerAmount);
 
         // expect(
         //   signerAmount.toString()
         // ).to.not.be.bignumber.equal(0, "Did not get token");
       }
     }
-
   });
 
   it("Curvefi to get curve tokens", async () => {
-    for(let i =0;i< curveAssets.length;i++){
-
-      const token = new ethers.Contract(curveAssets[i],IERC20abi, provider)
-      console.log(curveAssets[i])
+    for (let i = 0; i < curveAssets.length; i++) {
+      const token = new ethers.Contract(curveAssets[i], IERC20abi, provider);
+      console.log(curveAssets[i]);
       let curvePool;
 
-      for(let j =0;j<8;j++){
+      for (let j = 0; j < 8; j++) {
         let amounts;
-        let ethSend= {
+        let ethSend = {
           value: ethers.utils.parseEther("0"),
           gasLimit: 80000000,
         };
         let approvalToken;
         const signer = provider.getSigner(j);
-        if(i==0){
-          amounts= [ethers.utils.parseEther("0"),ethers.utils.parseEther("0"),ethers.utils.parseEther("10.0")]
+        if (i == 0) {
+          amounts = [
+            ethers.utils.parseEther("0"),
+            ethers.utils.parseEther("0"),
+            ethers.utils.parseEther("10.0"),
+          ];
           approvalToken = myWETH;
-          curvePool = new ethers.Contract(curvePools[i],curvePool3Abi, provider)
+          curvePool = new ethers.Contract(
+            curvePools[i],
+            curvePool3Abi,
+            provider
+          );
         }
-        if(i==1){
-          amounts= [ethers.utils.parseEther("1000"),ethers.utils.parseEther("0"),ethers.utils.parseEther("0")]
-          approvalToken = new ethers.Contract("0x6B175474E89094C44Da98b954EedeAC495271d0F",IERC20abi)
-          curvePool = new ethers.Contract(curvePools[i],curvePool3Abi, provider)
+        if (i == 1) {
+          amounts = [
+            ethers.utils.parseEther("1000"),
+            ethers.utils.parseEther("0"),
+            ethers.utils.parseEther("0"),
+          ];
+          approvalToken = new ethers.Contract(
+            "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+            IERC20abi
+          );
+          curvePool = new ethers.Contract(
+            curvePools[i],
+            curvePool3Abi,
+            provider
+          );
         }
-        if(i==2){
-          amounts= [ethers.utils.parseEther("100"),ethers.utils.parseEther("0")]
-          ethSend = {value: ethers.utils.parseEther("100")};
+        if (i == 2) {
+          amounts = [
+            ethers.utils.parseEther("100"),
+            ethers.utils.parseEther("0"),
+          ];
+          ethSend = { value: ethers.utils.parseEther("100") };
           approvalToken = myWETH;
-          curvePool = new ethers.Contract(curvePools[i],curvePool2Abi, provider)
+          curvePool = new ethers.Contract(
+            curvePools[i],
+            curvePool2Abi,
+            provider
+          );
         }
-        if(i==3){
-          var amountUSDC = ethers.utils.parseUnits("10000", 6)
-          amounts = [ethers.utils.parseEther("0"),amountUSDC]
-          approvalToken = new ethers.Contract("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",IERC20abi)
-          curvePool = new ethers.Contract(curvePools[i],curvePool2Abi, provider)
+        if (i == 3) {
+          var amountUSDC = ethers.utils.parseUnits("10000", 6);
+          amounts = [ethers.utils.parseEther("0"), amountUSDC];
+          approvalToken = new ethers.Contract(
+            "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            IERC20abi
+          );
+          curvePool = new ethers.Contract(
+            curvePools[i],
+            curvePool2Abi,
+            provider
+          );
         }
-        if(i==4){
-          amounts = [ethers.utils.parseEther("3000"),ethers.utils.parseEther("0")]
-          approvalToken = new ethers.Contract("0x853d955aCEf822Db058eb8505911ED77F175b99e",IERC20abi)
-          curvePool = new ethers.Contract(curvePools[i],curvePool2Abi, provider)
-          if(j>=1){ //not enough liquidity to fund all accounts
-            break
+        if (i == 4) {
+          amounts = [
+            ethers.utils.parseEther("3000"),
+            ethers.utils.parseEther("0"),
+          ];
+          approvalToken = new ethers.Contract(
+            "0x853d955aCEf822Db058eb8505911ED77F175b99e",
+            IERC20abi
+          );
+          curvePool = new ethers.Contract(
+            curvePools[i],
+            curvePool2Abi,
+            provider
+          );
+          if (j >= 1) {
+            //not enough liquidity to fund all accounts
+            break;
           }
         }
-        await approvalToken.connect(signer).approve(curvePool.address,ethers.utils.parseEther("10000.0"))
-        console.log("amounts: ",amounts)
-        await curvePool.connect(signer).add_liquidity(amounts,"0", ethSend)
+        await approvalToken
+          .connect(signer)
+          .approve(curvePool.address, ethers.utils.parseEther("10000.0"));
+        console.log("amounts: ", amounts);
+        await curvePool.connect(signer).add_liquidity(amounts, "0", ethSend);
 
-        var signerAmount = await token.connect(signer).balanceOf(await signer.getAddress())
+        var signerAmount = await token
+          .connect(signer)
+          .balanceOf(await signer.getAddress());
 
-        expect(
-          signerAmount.toString()
-        ).to.not.be.bignumber.equal(0, "Did not get token");
+        expect(signerAmount.toString()).to.not.be.bignumber.equal(
+          0,
+          "Did not get token"
+        );
       }
     }
-
   });
 
   it("Swap ETH for CVX on curve fi", async () => {
-    const DAI = new ethers.Contract(CVX,IERC20abi)
-    const CURVE_CONTRACT = new ethers.Contract(CVX_SWAP, CVX_SWAP_ABI, provider)
+    const DAI = new ethers.Contract(CVX, IERC20abi);
+    const CURVE_CONTRACT = new ethers.Contract(
+      CVX_SWAP,
+      CVX_SWAP_ABI,
+      provider
+    );
 
     //emergency deposits 100 WETH to pool to provide liquidity
     var options = {
       value: ethers.utils.parseEther("1000.0"),
       gasLimit: 80000000,
-    }
+    };
 
-    for(let j =0;j<8;j++){
+    for (let j = 0; j < 8; j++) {
       const signer = provider.getSigner(j);
-      await CURVE_CONTRACT.connect(signer).exchange_underlying(0,1,ethers.utils.parseEther("1000.0"),ethers.utils.parseEther("1000.0"),options)
+      await CURVE_CONTRACT.connect(signer).exchange_underlying(
+        0,
+        1,
+        ethers.utils.parseEther("1000.0"),
+        ethers.utils.parseEther("1000.0"),
+        options
+      );
 
-      var signerDAI = await DAI.connect(signer).balanceOf(await signer.getAddress())
+      var signerDAI = await DAI.connect(signer).balanceOf(
+        await signer.getAddress()
+      );
 
-      expect(
-          signerDAI.toString()
-      ).to.not.be.bignumber.equal(0, "Did not get DAI");
+      expect(signerDAI.toString()).to.not.be.bignumber.equal(
+        0,
+        "Did not get DAI"
+      );
     }
   });
 });
